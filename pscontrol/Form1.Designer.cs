@@ -108,7 +108,7 @@
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-			this.statusStrip1.Location = new System.Drawing.Point(0, 170);
+			this.statusStrip1.Location = new System.Drawing.Point(0, 171);
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.Size = new System.Drawing.Size(605, 22);
 			this.statusStrip1.TabIndex = 3;
@@ -572,7 +572,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(605, 192);
+			this.ClientSize = new System.Drawing.Size(605, 193);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.lockInputs);
 			this.Controls.Add(this.cbOutEnable);
@@ -584,7 +584,7 @@
 			this.MinimumSize = new System.Drawing.Size(287, 60);
 			this.Name = "Form1";
 			this.ShowIcon = false;
-			this.Text = "PScontrol";
+			this.Text = "psControl";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			this.Load += new System.EventHandler(this.Form1_Load);
 			this.statusStrip1.ResumeLayout(false);

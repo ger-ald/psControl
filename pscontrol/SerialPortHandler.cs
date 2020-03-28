@@ -2,11 +2,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace pscontrol
 {
@@ -64,16 +61,15 @@ namespace pscontrol
 				// ...
 			}
 
-
 			//notify eventhandlers
 			SerialPortBroke?.Invoke();
 		}
 
 		private void StartSerThread()
 		{
+			if ((serThread != null) && serThread.IsAlive) return;
 			stopSerThread_Token?.Dispose();
 			stopSerThread_Token = new CancellationTokenSource();
-			if ((serThread != null) && serThread.IsAlive) return;
 			serThread = new Thread(SerThread);
 			serThread.Start();
 		}
@@ -101,8 +97,6 @@ namespace pscontrol
 				}
 				if (!stopSerThread_Token.Token.IsCancellationRequested)
 				{
-					//byte[] tempb = new byte[task.send.Length];
-					//for (int i = 0; i < tempb.Length; i++) tempb[i] = (byte)task.send[i];
 					try
 					{
 						serialPort.Write(task.send);
@@ -114,7 +108,6 @@ namespace pscontrol
 					if (task.waittime > 0)
 					{
 						Stopwatch noAnswerTimeout = new Stopwatch();
-						//Stopwatch byteTimeout = new Stopwatch();
 						noAnswerTimeout.Start();
 						task.recv = "";
 						while ((task.recv.Length < 1) && (noAnswerTimeout.ElapsedMilliseconds < task.waittime))
@@ -124,7 +117,6 @@ namespace pscontrol
 							task.recv += temp;
 						}
 						noAnswerTimeout.Stop();
-						//byteTimeout.Stop();
 						fromserthreadqueue.Add(task);
 					}
 				}

@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
-using System.Threading;
-using System.IO;
-using System.CodeDom.Compiler;
-using System.CodeDom;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.Collections.Generic;
-using Microsoft.Win32;
 using System.Management;
 
 namespace pscontrol
@@ -216,7 +206,7 @@ namespace pscontrol
 			if (task.recv.Length != 1)
 			{
 				//we didnt get the expected single byte back
-				toolStripStatusLabel1.Text = "couldnt find device";
+				toolStripStatusLabel1.Text = "couldn't find device";
 				serport1.Close();
 				return;
 			}
@@ -280,11 +270,9 @@ namespace pscontrol
 				throw new IndexOutOfRangeException();
 			}
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_DONTCARE, "RCL" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
-			//serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_INITOUTENA, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));//RCLn always disables output...
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_VGET, "VSET1?", SERIAL_RECV_TIMEOUT_KEEP));
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_IGET, "ISET1?", SERIAL_RECV_TIMEOUT_KEEP));
-			cbOutEnable.Checked = false;
-			SetStatLeds(0);//clear the indicators
+			cbOutEnable.Checked = false;//recall always turns off the output
 		}
 
 		private void PsuSave(byte index)
@@ -299,6 +287,9 @@ namespace pscontrol
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_VSET, "VSET1:" + ((double)setVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_ISET, "ISET1:" + ((double) setCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_DONTCARE, "SAV" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
+
+			//can't prevent output from turning off, but can update the outputenable checkbox to reflect it:
+			cbOutEnable.Checked = false;
 		}
 
 
@@ -403,18 +394,13 @@ namespace pscontrol
 				{
 					consecutiveEmptyReplies = 0;
 				}
-				if ((task.type != SERIALMSG_INITOUTENA) && (task.type != SERIALMSG_STATUS) && (!char.IsDigit(task.recv[0]))) return;//filter misformed replies
+				if ((task.type != SERIALMSG_STATUS) && (!char.IsDigit(task.recv[0]))) return;//filter misformed replies
 				double tempvalue;
 				switch (task.type)
 				{
 					//received cc/cv and output enabled state from psu ('SERIALMSG_STATUS' happens frequent)
-					case SERIALMSG_INITOUTENA:
 					case SERIALMSG_STATUS:
 						SetStatLeds((byte)task.recv[0]);
-						if (SERIALMSG_INITOUTENA == task.type)
-						{
-							cbOutEnable.Checked = ((byte)task.recv[0] & 0x40) != 0;
-						}
 						break;
 
 					//received actual v/i output from psu (happens frequent)
