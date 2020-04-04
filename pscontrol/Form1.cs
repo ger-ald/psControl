@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Globalization;
 using System.Collections.Generic;
-using System.Management;
 
 namespace pscontrol
 {
@@ -79,49 +78,34 @@ namespace pscontrol
 		{
 			btnComConnect.BeginInvoke((MethodInvoker)delegate ()
 			{
-				toolStripStatusLabel1.Text = "";
+				toolStripStatusLabel1.Text = "lost comport";
 				StopComms();
 			});
 		}
 
-		public static string[] WmiDetectComs()
-		{
-			using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ClassGuid='{4d36e978-e325-11ce-bfc1-08002be10318}'"))
-			{
-				List<string> comlist = new List<string>();
-				string caption = "";
-				string port = "";
-				int portnameindex;
-				foreach (ManagementObject obj in searcher.Get())
-				{
-					if (obj != null)
-					{
-						object captionObj = obj["Caption"];
-						if (captionObj != null)
-						{
-							caption = captionObj.ToString();
-							portnameindex = caption.LastIndexOf(" (COM");
-							if (portnameindex > 0)
-							{
-								portnameindex = caption.LastIndexOf(" (COM");
-								port = caption.Substring(portnameindex + 2).Replace(")", string.Empty);
-								port += ": " + caption.Substring(0, portnameindex);
-								comlist.Add(port);
-							}
-						}
-					}
-				}
-				//comlist.Sort();
-				return comlist.ToArray();
-			}
-		}
-
 		private void RefreshDropdown()
 		{
+			SerialPortHandler.ComPortEntry[] comPorts = SerialPortHandler.WmiDetectComs();
+			List<string> descriptions = new List<string>();
+			foreach (SerialPortHandler.ComPortEntry comPortEntry in comPorts)
+				descriptions.Add(comPortEntry.port + " : " + comPortEntry.description);
+			string prevSelection = cmbbxComList.Text;
 			cmbbxComList.Items.Clear();
-			cmbbxComList.Items.AddRange(WmiDetectComs());
+			cmbbxComList.Items.AddRange(descriptions.ToArray());
 			if (cmbbxComList.Items.Count > 0)
-				cmbbxComList.SelectedIndex = cmbbxComList.Items.Count - 1;
+			{
+				//combobox isn't empty (there are comports on the pc)
+				if (prevSelection.Length > 0)
+				{
+					//something was selected so try to put it back (combobox.SelectedIndex will go back to -1 if not found)
+					cmbbxComList.SelectedItem = prevSelection;
+				}
+				if (-1 == cmbbxComList.SelectedIndex)
+				{
+					//nothing selected, so just select the first entry
+					cmbbxComList.SelectedIndex = 0;
+				}
+			}
 		}
 
 		private void EnableInputs(bool newState)
@@ -158,7 +142,9 @@ namespace pscontrol
 			double power = voltage * current;
 			double resistance = voltage / current;
 			lblOutWatt.Text = power.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " W";//can go up to 999.999
-			if (resistance < 1000.000 || double.IsNaN(resistance) || double.IsInfinity(resistance))
+			if (double.IsInfinity(resistance))
+				lblOutOhm.Text = "∞".PadLeft(7) + " Ω";//on windows xp it prints 'Infinity' instead of the infinity sign if you run it through ToString()
+			else if (resistance < 1000.000 || double.IsNaN(resistance))
 				lblOutOhm.Text = resistance.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " Ω";//can go up to 999.999
 			else
 				lblOutOhm.Text = (resistance / 1000.0).ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + " kΩ";//can go up to 999.999

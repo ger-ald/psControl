@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
+using System.Management;
+using System.Collections.Generic;
 
 namespace pscontrol
 {
@@ -16,6 +18,17 @@ namespace pscontrol
 
 		private CancellationTokenSource stopSerThread_Token;
 
+		public struct ComPortEntry
+		{
+			public string port;
+			public string description;
+
+			public ComPortEntry(string port, string description)
+			{
+				this.port = port;
+				this.description = description;
+			}
+		}
 		public struct Serialtask
 		{
 			public int type;
@@ -48,6 +61,41 @@ namespace pscontrol
 			toserthreadqueue = new BlockingCollection<Serialtask>();
 			fromserthreadqueue = new BlockingCollection<Serialtask>();
 		}
+
+
+
+		public static ComPortEntry[] WmiDetectComs()
+		{
+			using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ClassGuid='{4d36e978-e325-11ce-bfc1-08002be10318}'"))
+			{
+				List<ComPortEntry> comlist = new List<ComPortEntry>();
+				string caption = "";
+				string port = "";
+				int portnameindex;
+				foreach (ManagementObject obj in searcher.Get())
+				{
+					if (obj != null)
+					{
+						object captionObj = obj["Caption"];
+						if (captionObj != null)
+						{
+							caption = captionObj.ToString();
+							portnameindex = caption.LastIndexOf(" (COM");
+							if (portnameindex > 0)
+							{
+								port = caption.Substring(portnameindex + 2).Replace(")", string.Empty);
+								comlist.Add(new ComPortEntry(port, caption.Substring(0, portnameindex)));
+							}
+						}
+					}
+				}
+				//comlist.Sort();
+				return comlist.ToArray();
+			}
+		}
+
+
+
 
 		private void NotifySerPortError()
 		{
@@ -110,7 +158,7 @@ namespace pscontrol
 						Stopwatch noAnswerTimeout = new Stopwatch();
 						noAnswerTimeout.Start();
 						task.recv = "";
-						while ((task.recv.Length < 1) && (noAnswerTimeout.ElapsedMilliseconds < task.waittime))
+						while ((task.recv.Length == 0) && (noAnswerTimeout.ElapsedMilliseconds < task.waittime))
 						{
 							string temp = SerialPortBlockingRead(serialPort);
 							if (temp == null) break;//serport error ocurred
@@ -131,6 +179,11 @@ namespace pscontrol
 			Console.WriteLine("[SerThread] exit");
 		}
 
+		/// <summary>
+		/// blocking receive bytes from the serialport
+		/// </summary>
+		/// <param name="port">what port to use</param>
+		/// <returns>null on serialport error, received string otherwise</returns>
 		private static string SerialPortBlockingRead(SerialPort port)
 		{
 			var recv = new StringBuilder(SERIAL_RECV_LEN);
@@ -145,11 +198,16 @@ namespace pscontrol
 			{
 				//this means the receive 'packet' is complete
 			}
-			catch// (Exception ex)
+			catch (System.IO.IOException)
 			{
-				//System.IO.IOException and System.UnauthorizedAccessException
+				//comport got disconnected
 				return null;
 			}
+			//catch (UnauthorizedAccessException)
+			//{
+				//i can't remember what this was for, so i'll leave it out for now
+			//	return null;
+			//}
 			return recv.ToString();
 		}
 
