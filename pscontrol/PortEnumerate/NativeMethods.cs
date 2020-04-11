@@ -214,8 +214,8 @@ namespace Win32PortEnumerate
 		[StructLayout(LayoutKind.Sequential)]
 		internal struct DEVPROPKEY
 		{
-			public Guid fmtid;
-			public UInt32 pid;
+			public Guid Fmtid;
+			public UInt32 Pid;
 		}
 
 

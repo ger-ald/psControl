@@ -13,7 +13,7 @@ namespace Win32PortEnumerate
 	{
 		const int utf16terminatorSize_bytes = 2;
 
-		public static IEnumerable<UsbSerialDevice> Enumerate()
+		public static IEnumerable<SerialportDevice> Enumerate()
 		{
 			Guid[] guids = GetClassGUIDs("Ports");
 			Guid[] addGuids = GetClassGUIDs("Modem");
@@ -98,7 +98,7 @@ namespace Win32PortEnumerate
 
 						//Dictionary<string, string> id = GetDeviceVidPid(hDevInfoSet, devInfoData);
 
-						var device = new UsbSerialDevice
+						var device = new SerialportDevice
 						{
 							Port = port,
 							Description = description,
@@ -185,9 +185,7 @@ namespace Win32PortEnumerate
 
 		private static string GetDeviceBusDescription(IntPtr hDeviceInfoSet, NativeMethods.DevInfoData deviceInfoData)
 		{
-			NativeMethods.DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc = new NativeMethods.DEVPROPKEY();
-			DEVPKEY_Device_BusReportedDeviceDesc.fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2);
-			DEVPKEY_Device_BusReportedDeviceDesc.pid = 4;
+			NativeMethods.DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc = new NativeMethods.DEVPROPKEY() { Fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), Pid = 4 };
 			uint propRegDataType;
 			byte[] ptrBuf = new byte[256];
 			uint RequiredSize;
@@ -232,6 +230,7 @@ namespace Win32PortEnumerate
 		}*/
 
 		/*
+			//NativeMethods.DEVPROPKEY DEVPKEY_Device_LocationPaths = new NativeMethods.DEVPROPKEY() { Fmtid = new Guid(0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0), Pid = 37 };
 https://github.com/vurdalakov/usbdevices/blob/master/src/UsbDevicesDotNet/UsbDeviceWinApi.DevicePropertyKeys.cs
 		 */
 	}

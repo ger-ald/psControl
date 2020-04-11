@@ -86,7 +86,7 @@ namespace pscontrol
 
 		private void RefreshDropdown()
 		{
-			List<UsbSerialDevice> devices = new List<UsbSerialDevice>();
+			List<SerialportDevice> devices = new List<SerialportDevice>();
 			//try
 			//{
 				devices = SerialportEnumerator.Enumerate().ToList();
@@ -185,7 +185,7 @@ namespace pscontrol
 		{
 			try
 			{
-				serport1.Open((cmbbxComList.SelectedItem as UsbSerialDevice).Port);
+				serport1.Open((cmbbxComList.SelectedItem as SerialportDevice).Port);
 			}
 			catch (Exception ex)
 			{

@@ -1,6 +1,6 @@
 ﻿namespace Win32PortEnumerate
 {
-	public class UsbSerialDevice
+	public class SerialportDevice
 	{
 		//public int? Vid { get; set; }
 		//public int? Pid { get; set; }
