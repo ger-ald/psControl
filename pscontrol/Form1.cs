@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Globalization;
 using System.Collections.Generic;
+using Win32PortEnumerate;
+using System.Linq;
 
 namespace pscontrol
 {
@@ -13,7 +15,6 @@ namespace pscontrol
 		private const int SERIAL_MAXEMPTYREPLIES = 4;//after thismany unexpected empty replies, the psu is considered lost. (if psu is disconnected the serial cmd's will timeout and thus come back empty even when we expected a reply)
 
 
-		//public static Form1 mainformref;
 		private readonly SerialPortHandler serport1;
 
 
@@ -85,20 +86,28 @@ namespace pscontrol
 
 		private void RefreshDropdown()
 		{
-			SerialPortHandler.ComPortEntry[] comPorts = SerialPortHandler.WmiDetectComs();
-			List<string> descriptions = new List<string>();
-			foreach (SerialPortHandler.ComPortEntry comPortEntry in comPorts)
-				descriptions.Add(comPortEntry.port + " : " + comPortEntry.description);
+			List<UsbSerialDevice> devices = new List<UsbSerialDevice>();
+			//try
+			//{
+				devices = SerialportEnumerator.Enumerate().ToList();
+			/*}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"{ex.Message}\n\n{ex.StackTrace}");
+			}*/
+			devices.Sort((x, y) => NativeMethods.StrCmpLogicalW(x.Port, y.Port));
+			//devices.ForEach(device => Console.WriteLine($"Found port:\n  Port:         {device.Port}\n  Description:  {device.Description}\n  FriendlyName: {device.FriendlyName}\n  BusReported:  {device.BusReportedDeviceDescription}\n  deviceID:     {device.DeviceID}"));
+
 			string prevSelection = cmbbxComList.Text;
 			cmbbxComList.Items.Clear();
-			cmbbxComList.Items.AddRange(descriptions.ToArray());
+			cmbbxComList.Items.AddRange(devices.ToArray());
 			if (cmbbxComList.Items.Count > 0)
 			{
 				//combobox isn't empty (there are comports on the pc)
 				if (prevSelection.Length > 0)
 				{
 					//something was selected so try to put it back (combobox.SelectedIndex will go back to -1 if not found)
-					cmbbxComList.SelectedItem = prevSelection;
+					cmbbxComList.Text = prevSelection;
 				}
 				if (-1 == cmbbxComList.SelectedIndex)
 				{
@@ -176,7 +185,7 @@ namespace pscontrol
 		{
 			try
 			{
-				serport1.Open(cmbbxComList.Text.Split(':')[0]);
+				serport1.Open((cmbbxComList.SelectedItem as UsbSerialDevice).Port);
 			}
 			catch (Exception ex)
 			{
@@ -218,7 +227,7 @@ namespace pscontrol
 			voltRepliesCounter = 0;
 			tmrRateTimer.Enabled = true;
 
-			if (!lockInputs.Checked) EnableInputs(true);
+			if (!cbLockInputs.Checked) EnableInputs(true);
 		}
 
 		private void StopComms()
@@ -271,7 +280,7 @@ namespace pscontrol
 			//when recalling one mem and saving it under another, the psu ignores the save. work-around: recall the one where we want to save and write our V and A again, then save. (write V and A only doesn't work)
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_DONTCARE, "RCL" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_VSET, "VSET1:" + ((double)setVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
-			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_ISET, "ISET1:" + ((double) setCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_ISET, "ISET1:" + ((double)setCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_DONTCARE, "SAV" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
 
 			//can't prevent output from turning off, but can update the outputenable checkbox to reflect it:
@@ -327,9 +336,9 @@ namespace pscontrol
 			serport1.Send(new SerialPortHandler.Serialtask(SERIALMSG_DONTCARE, "OUT" + (cbOutEnable.Checked ? "1" : "0"), SERIAL_RECV_TIMEOUT_TOSS));
 		}
 
-		private void LockInputs_CheckedChanged(object sender, EventArgs e)
+		private void CbLockInputs_CheckedChanged(object sender, EventArgs e)
 		{
-			EnableInputs((!lockInputs.Checked) && serport1.IsOpen);
+			EnableInputs((!cbLockInputs.Checked) && serport1.IsOpen);
 		}
 
 		private void TmrComTimer_Tick(object sender, EventArgs e)

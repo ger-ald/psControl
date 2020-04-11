@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
-using System.Management;
-using System.Collections.Generic;
 
 namespace pscontrol
 {
@@ -18,17 +16,6 @@ namespace pscontrol
 
 		private CancellationTokenSource stopSerThread_Token;
 
-		public struct ComPortEntry
-		{
-			public string port;
-			public string description;
-
-			public ComPortEntry(string port, string description)
-			{
-				this.port = port;
-				this.description = description;
-			}
-		}
 		public struct Serialtask
 		{
 			public int type;
@@ -60,38 +47,6 @@ namespace pscontrol
 			this.serialPort = serialPort;
 			toserthreadqueue = new BlockingCollection<Serialtask>();
 			fromserthreadqueue = new BlockingCollection<Serialtask>();
-		}
-
-
-
-		public static ComPortEntry[] WmiDetectComs()
-		{
-			using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ClassGuid='{4d36e978-e325-11ce-bfc1-08002be10318}'"))
-			{
-				List<ComPortEntry> comlist = new List<ComPortEntry>();
-				string caption = "";
-				string port = "";
-				int portnameindex;
-				foreach (ManagementObject obj in searcher.Get())
-				{
-					if (obj != null)
-					{
-						object captionObj = obj["Caption"];
-						if (captionObj != null)
-						{
-							caption = captionObj.ToString();
-							portnameindex = caption.LastIndexOf(" (COM");
-							if (portnameindex > 0)
-							{
-								port = caption.Substring(portnameindex + 2).Replace(")", string.Empty);
-								comlist.Add(new ComPortEntry(port, caption.Substring(0, portnameindex)));
-							}
-						}
-					}
-				}
-				//comlist.Sort();
-				return comlist.ToArray();
-			}
 		}
 
 
