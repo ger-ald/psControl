@@ -64,8 +64,8 @@
     </Compile>
     <Compile Include="MyExtensionMethods.cs" />
     <Compile Include="PortEnumerate\NativeMethods.cs" />
-    <Compile Include="PortEnumerate\SerialportDevice.cs" />
-    <Compile Include="PortEnumerate\SerialportEnumerator.cs" />
+    <Compile Include="PortEnumerate\SerialPortDevice.cs" />
+    <Compile Include="PortEnumerate\SerialPortEnumerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialPortHandler.cs" />
