@@ -57,7 +57,6 @@ namespace pscontrol
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.btnComConnect = new System.Windows.Forms.Button();
-			this.tmrComTimer = new System.Windows.Forms.Timer(this.components);
 			this.lblSetpointWatt = new System.Windows.Forms.Label();
 			this.cbOutEnable = new System.Windows.Forms.CheckBox();
 			this.lblOutVolt = new System.Windows.Forms.Label();
@@ -69,15 +68,7 @@ namespace pscontrol
 			this.cbIndicatorCC = new System.Windows.Forms.CheckBox();
 			this.cbLockInputs = new System.Windows.Forms.CheckBox();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.customNumericUpDown1 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown2 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown3 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown4 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown5 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown6 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown7 = new pscontrol.CustomNumericUpDown();
 			this.tmrRateTimer = new System.Windows.Forms.Timer(this.components);
-			this.lblReplyRateDisplay = new System.Windows.Forms.Label();
 			this.lblOutRateDisplay = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -92,18 +83,25 @@ namespace pscontrol
 			this.btnLoad2 = new System.Windows.Forms.Button();
 			this.btnSave1 = new System.Windows.Forms.Button();
 			this.btnLoad1 = new System.Windows.Forms.Button();
+			this.customNumericUpDown1 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown2 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown3 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown4 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown5 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown7 = new pscontrol.CustomNumericUpDown();
+			this.customNumericUpDown6 = new pscontrol.CustomNumericUpDown();
 			this.statusStrip1.SuspendLayout();
 			this.groupBox1.SuspendLayout();
+			this.groupBox2.SuspendLayout();
+			this.groupBox3.SuspendLayout();
+			this.groupBox4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown2)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown3)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown4)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown5)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown6)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown7)).BeginInit();
-			this.groupBox2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
-			this.groupBox4.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown6)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// cmbbxComList
@@ -151,11 +149,6 @@ namespace pscontrol
 			this.btnComConnect.Text = "Connect";
 			this.btnComConnect.UseVisualStyleBackColor = true;
 			this.btnComConnect.Click += new System.EventHandler(this.BtnComConnect_Click);
-			// 
-			// tmrComTimer
-			// 
-			this.tmrComTimer.Interval = 50;
-			this.tmrComTimer.Tick += new System.EventHandler(this.TmrComTimer_Tick);
 			// 
 			// lblSetpointWatt
 			// 
@@ -283,159 +276,16 @@ namespace pscontrol
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Setpoints";
 			// 
-			// customNumericUpDown1
-			// 
-			this.customNumericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown1.Location = new System.Drawing.Point(9, 16);
-			this.customNumericUpDown1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown1.Maximum = new decimal(new int[] {
-            31,
-            0,
-            0,
-            0});
-			this.customNumericUpDown1.Name = "customNumericUpDown1";
-			this.customNumericUpDown1.Size = new System.Drawing.Size(42, 22);
-			this.customNumericUpDown1.TabIndex = 3;
-			this.customNumericUpDown1.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
-			// customNumericUpDown2
-			// 
-			this.customNumericUpDown2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown2.Location = new System.Drawing.Point(57, 16);
-			this.customNumericUpDown2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown2.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-			this.customNumericUpDown2.Name = "customNumericUpDown2";
-			this.customNumericUpDown2.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown2.TabIndex = 4;
-			this.customNumericUpDown2.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
-			// customNumericUpDown3
-			// 
-			this.customNumericUpDown3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown3.Location = new System.Drawing.Point(87, 16);
-			this.customNumericUpDown3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown3.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-			this.customNumericUpDown3.Name = "customNumericUpDown3";
-			this.customNumericUpDown3.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown3.TabIndex = 5;
-			this.customNumericUpDown3.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
-			// customNumericUpDown4
-			// 
-			this.customNumericUpDown4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown4.Location = new System.Drawing.Point(22, 46);
-			this.customNumericUpDown4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown4.Maximum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-			this.customNumericUpDown4.Name = "customNumericUpDown4";
-			this.customNumericUpDown4.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown4.TabIndex = 6;
-			this.customNumericUpDown4.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
-			// customNumericUpDown5
-			// 
-			this.customNumericUpDown5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown5.Location = new System.Drawing.Point(57, 46);
-			this.customNumericUpDown5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown5.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-			this.customNumericUpDown5.Name = "customNumericUpDown5";
-			this.customNumericUpDown5.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown5.TabIndex = 7;
-			this.customNumericUpDown5.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
-			// customNumericUpDown6
-			// 
-			this.customNumericUpDown6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown6.Location = new System.Drawing.Point(87, 46);
-			this.customNumericUpDown6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown6.Maximum = new decimal(new int[] {
-			9,
-			0,
-			0,
-			0});
-			this.customNumericUpDown6.Name = "customNumericUpDown6";
-			this.customNumericUpDown6.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown6.TabIndex = 8;
-			this.customNumericUpDown6.ValueNoOnValueChanged = new decimal(new int[] {
-			0,
-			0,
-			0,
-			0});
-			// 
-			// customNumericUpDown7
-			// 
-			this.customNumericUpDown7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown7.Location = new System.Drawing.Point(117, 46);
-			this.customNumericUpDown7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown7.Maximum = new decimal(new int[] {
-            9,
-            0,
-            0,
-            0});
-			this.customNumericUpDown7.Name = "customNumericUpDown7";
-			this.customNumericUpDown7.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown7.TabIndex = 9;
-			this.customNumericUpDown7.ValueNoOnValueChanged = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-			// 
 			// tmrRateTimer
 			// 
 			this.tmrRateTimer.Interval = 1000;
 			this.tmrRateTimer.Tick += new System.EventHandler(this.TmrRateTimer_Tick);
 			// 
-			// lblReplyRateDisplay
-			// 
-			this.lblReplyRateDisplay.AutoSize = true;
-			this.lblReplyRateDisplay.Font = new System.Drawing.Font("Lucida Console", 7F);
-			this.lblReplyRateDisplay.Location = new System.Drawing.Point(7, 43);
-			this.lblReplyRateDisplay.Name = "lblReplyRateDisplay";
-			this.lblReplyRateDisplay.Size = new System.Drawing.Size(89, 10);
-			this.lblReplyRateDisplay.TabIndex = 21;
-			this.lblReplyRateDisplay.Text = " - replies/sec";
-			// 
 			// lblOutRateDisplay
 			// 
 			this.lblOutRateDisplay.AutoSize = true;
 			this.lblOutRateDisplay.Font = new System.Drawing.Font("Lucida Console", 7F);
-			this.lblOutRateDisplay.Location = new System.Drawing.Point(166, 43);
+			this.lblOutRateDisplay.Location = new System.Drawing.Point(7, 42);
 			this.lblOutRateDisplay.Name = "lblOutRateDisplay";
 			this.lblOutRateDisplay.Size = new System.Drawing.Size(89, 10);
 			this.lblOutRateDisplay.TabIndex = 22;
@@ -443,7 +293,6 @@ namespace pscontrol
 			// 
 			// groupBox2
 			// 
-			this.groupBox2.Controls.Add(this.lblReplyRateDisplay);
 			this.groupBox2.Controls.Add(this.lblOutRateDisplay);
 			this.groupBox2.Controls.Add(this.cmbbxComList);
 			this.groupBox2.Controls.Add(this.btnComRefresh);
@@ -590,6 +439,146 @@ namespace pscontrol
 			this.btnLoad1.UseVisualStyleBackColor = true;
 			this.btnLoad1.Click += new System.EventHandler(this.btnLoad_Click);
 			// 
+			// customNumericUpDown1
+			// 
+			this.customNumericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown1.Location = new System.Drawing.Point(9, 16);
+			this.customNumericUpDown1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown1.Maximum = new decimal(new int[] {
+            31,
+            0,
+            0,
+            0});
+			this.customNumericUpDown1.Name = "customNumericUpDown1";
+			this.customNumericUpDown1.Size = new System.Drawing.Size(42, 22);
+			this.customNumericUpDown1.TabIndex = 3;
+			this.customNumericUpDown1.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown1.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			// 
+			// customNumericUpDown2
+			// 
+			this.customNumericUpDown2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown2.Location = new System.Drawing.Point(57, 16);
+			this.customNumericUpDown2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown2.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+			this.customNumericUpDown2.Name = "customNumericUpDown2";
+			this.customNumericUpDown2.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown2.TabIndex = 4;
+			this.customNumericUpDown2.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown2.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			// 
+			// customNumericUpDown3
+			// 
+			this.customNumericUpDown3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown3.Location = new System.Drawing.Point(87, 16);
+			this.customNumericUpDown3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown3.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+			this.customNumericUpDown3.Name = "customNumericUpDown3";
+			this.customNumericUpDown3.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown3.TabIndex = 5;
+			this.customNumericUpDown3.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown3.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			// 
+			// customNumericUpDown4
+			// 
+			this.customNumericUpDown4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown4.Location = new System.Drawing.Point(22, 46);
+			this.customNumericUpDown4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown4.Maximum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+			this.customNumericUpDown4.Name = "customNumericUpDown4";
+			this.customNumericUpDown4.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown4.TabIndex = 6;
+			this.customNumericUpDown4.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown4.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			// 
+			// customNumericUpDown5
+			// 
+			this.customNumericUpDown5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown5.Location = new System.Drawing.Point(57, 46);
+			this.customNumericUpDown5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown5.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+			this.customNumericUpDown5.Name = "customNumericUpDown5";
+			this.customNumericUpDown5.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown5.TabIndex = 7;
+			this.customNumericUpDown5.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown5.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			// 
+			// customNumericUpDown7
+			// 
+			this.customNumericUpDown7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown7.Location = new System.Drawing.Point(117, 46);
+			this.customNumericUpDown7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown7.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+			this.customNumericUpDown7.Name = "customNumericUpDown7";
+			this.customNumericUpDown7.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown7.TabIndex = 9;
+			this.customNumericUpDown7.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown7.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			// 
+			// customNumericUpDown6
+			// 
+			this.customNumericUpDown6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.customNumericUpDown6.Location = new System.Drawing.Point(87, 46);
+			this.customNumericUpDown6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.customNumericUpDown6.Maximum = new decimal(new int[] {
+            9,
+            0,
+            0,
+            0});
+			this.customNumericUpDown6.Name = "customNumericUpDown6";
+			this.customNumericUpDown6.Size = new System.Drawing.Size(29, 22);
+			this.customNumericUpDown6.TabIndex = 8;
+			this.customNumericUpDown6.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.customNumericUpDown6.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -613,6 +602,11 @@ namespace pscontrol
 			this.statusStrip1.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
+			this.groupBox2.ResumeLayout(false);
+			this.groupBox2.PerformLayout();
+			this.groupBox3.ResumeLayout(false);
+			this.groupBox3.PerformLayout();
+			this.groupBox4.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown2)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown3)).EndInit();
@@ -620,11 +614,6 @@ namespace pscontrol
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown5)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown7)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown6)).EndInit();
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
-			this.groupBox4.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -651,9 +640,7 @@ namespace pscontrol
 		private System.Windows.Forms.CheckBox cbIndicatorCV;
 		private System.Windows.Forms.CheckBox cbIndicatorCC;
 		private System.Windows.Forms.CheckBox cbLockInputs;
-		private System.Windows.Forms.Timer tmrComTimer;
 		private System.Windows.Forms.Timer tmrRateTimer;
-		private System.Windows.Forms.Label lblReplyRateDisplay;
 		private System.Windows.Forms.Label lblOutRateDisplay;
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.GroupBox groupBox2;

@@ -39,24 +39,27 @@ namespace pscontrol
 
 		private CancellationTokenSource stopSerThread_Token;
 
-		public struct Serialtask
+		public class SerialTask
 		{
-			public int type;
-			public string send;
-			public int waittime;
-			public string recv;
+			[System.ComponentModel.Bindable(true)]
+			[System.ComponentModel.TypeConverter(typeof(System.ComponentModel.StringConverter))]
+			public object Tag;
 
-			public Serialtask(int type, string tosend, int waittime)
+			public string Send;
+			public int WaitTime;
+			public string Recv;
+
+			public SerialTask(object tag, string toSend, int waitTime)
 			{
-				this.type = type;
-				send = tosend;
-				this.waittime = waittime;
-				recv = null;
+				this.Tag = tag;
+				this.Send = toSend;
+				this.WaitTime = waitTime;
+				this.Recv = null;
 			}
 		}
 
-		private BlockingCollection<Serialtask> toserthreadqueue;
-		private BlockingCollection<Serialtask> fromserthreadqueue;
+		private BlockingCollection<SerialTask> toSerThreadQueue;
+		private BlockingCollection<SerialTask> fromSerThreadQueue;
 
 		public delegate void SerialBroke_Delegate();
 		public event SerialBroke_Delegate SerialPortBroke;
@@ -68,8 +71,8 @@ namespace pscontrol
 		public SerialPortHandler(SerialPort serialPort)
 		{
 			this.serialPort = serialPort;
-			toserthreadqueue = new BlockingCollection<Serialtask>();
-			fromserthreadqueue = new BlockingCollection<Serialtask>();
+			toSerThreadQueue = new BlockingCollection<SerialTask>();
+			fromSerThreadQueue = new BlockingCollection<SerialTask>();
 		}
 
 
@@ -106,16 +109,17 @@ namespace pscontrol
 			if (!serThread.IsAlive) return;
 			stopSerThread_Token.Cancel();
 			serThread.Join();
+			serThread = null;
 		}
 
 		private void SerThread()
 		{
 			while (serialPort.IsOpen)
 			{
-				Serialtask task;
+				SerialTask task;
 				try
 				{
-					task = toserthreadqueue.Take(stopSerThread_Token.Token);
+					task = toSerThreadQueue.Take(stopSerThread_Token.Token);
 				}
 				catch
 				{
@@ -125,25 +129,25 @@ namespace pscontrol
 				{
 					try
 					{
-						serialPort.Write(task.send);
+						serialPort.Write(task.Send);
 					}
 					catch
 					{
 						break;
 					}
-					if (task.waittime > 0)
+					if (task.WaitTime > 0)
 					{
 						Stopwatch noAnswerTimeout = new Stopwatch();
 						noAnswerTimeout.Start();
-						task.recv = "";
-						while ((task.recv.Length == 0) && (noAnswerTimeout.ElapsedMilliseconds < task.waittime))
+						task.Recv = "";
+						while ((task.Recv.Length == 0) && (noAnswerTimeout.ElapsedMilliseconds < task.WaitTime))
 						{
 							string temp = SerialPortBlockingRead(serialPort);
 							if (temp == null) break;//serport error ocurred
-							task.recv += temp;
+							task.Recv += temp;
 						}
 						noAnswerTimeout.Stop();
-						fromserthreadqueue.Add(task);
+						fromSerThreadQueue.Add(task);
 					}
 				}
 			}
@@ -181,11 +185,11 @@ namespace pscontrol
 				//comport got disconnected
 				return null;
 			}
-			//catch (UnauthorizedAccessException)
-			//{
-				//i can't remember what this was for, so i'll leave it out for now
-			//	return null;
-			//}
+			catch (InvalidOperationException)
+			{
+				//comport is closed
+				return null;
+			}
 			return recv.ToString();
 		}
 
@@ -210,28 +214,33 @@ namespace pscontrol
 		{
 			StopSerThread();
 			if (serialPort.IsOpen) serialPort.Close();	//now empty the queues
-			toserthreadqueue.ClearQueue();
-			fromserthreadqueue.ClearQueue();
+			toSerThreadQueue.ClearQueue();
+			fromSerThreadQueue.ClearQueue();
 		}
 
 		public int SendCount
 		{
-			get { return toserthreadqueue.Count; }
+			get { return toSerThreadQueue.Count; }
 		}
 
-		public void Send(Serialtask task)
+		public void Send(SerialTask task)
 		{
-			if (serialPort.IsOpen) toserthreadqueue.Add(task);
+			if (serialPort.IsOpen) toSerThreadQueue.Add(task);
 		}
 
 		public int RecvCount
 		{
-			get { return fromserthreadqueue.Count; }
+			get { return fromSerThreadQueue.Count; }
 		}
 
-		public bool TryRecv(out Serialtask task)
+		public bool TryRecv(out SerialTask task)
 		{
-			return fromserthreadqueue.TryTake(out task);
+			return fromSerThreadQueue.TryTake(out task);
+		}
+
+		public bool TryRecv(out SerialTask task, int millisecondsTimeout, CancellationToken cancellationToken)
+		{
+			return fromSerThreadQueue.TryTake(out task, millisecondsTimeout, cancellationToken);
 		}
 	}
 }

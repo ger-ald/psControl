@@ -2,15 +2,16 @@
 control program for korad ka3005 power supply (and copies)
 
 **Screenshot of running program:**<br>
-![image](https://user-images.githubusercontent.com/10982994/77833105-09d22e80-713b-11ea-94c6-2dc5308ca593.png)<br>
+![image](https://user-images.githubusercontent.com/10982994/80310768-b0fac200-87dc-11ea-82cc-c1a6be70eece.png)<br>
 <sup>(orange titlebar not included😉)</sup>
 
 **path to compiled bin:**<br>
 /pscontrol/bin/Release/pscontrol.exe
 
 **rundown of changes:**<br>
-v1.1.2.1:<br>
--minor cleanup
+v1.1.3.1:<br>
+-code cleanup<br>
+-moved higher level code for psu from form1 to it's own class
 
 v1.1.2.0:<br>
 -added load/save feature<br>
