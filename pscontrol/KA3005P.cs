@@ -59,13 +59,12 @@ namespace pscontrol
 		private int consecutiveEmptyReplies = 0;
 
 
-		public delegate void OnChange_Delegate();
 		/// <summary>
 		/// This event is called when the setpoints are changed by the psu, for example: right after connecting or recalling from psu memory.
 		/// </summary>
-		public event OnChange_Delegate OnSetpointUpdate;
-		public event OnChange_Delegate OnOutputUpdate;
-		public event OnChange_Delegate OnSurpriseDisconnect;
+		public event EventHandler OnSetpointUpdate;
+		public event EventHandler OnOutputUpdate;
+		public event EventHandler OnSurpriseDisconnect;
 
 		private Thread otherThread = null;
 		private CancellationTokenSource stopOtherThread_CancelToken;
@@ -251,7 +250,7 @@ namespace pscontrol
 							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out currentCurrent))
 							{
 								//v and i received, so notify eventhandlers: (when we send requests the V is asked first so here we should have received V already)
-								OnOutputUpdate?.Invoke();
+								OnOutputUpdate?.Invoke(this, EventArgs.Empty);
 							}
 							break;
 
@@ -269,7 +268,7 @@ namespace pscontrol
 								this.SetpointI = tempvalue;
 								prevSetCurrent = setpointCurrent;
 								//v and i received, so notify eventhandlers:
-								OnSetpointUpdate?.Invoke();
+								OnSetpointUpdate?.Invoke(this, EventArgs.Empty);
 							}
 							break;
 
@@ -295,10 +294,10 @@ namespace pscontrol
 		private void NotifyOnSurpriseDisconnect()
 		{
 			//notify eventhandlers
-			OnSurpriseDisconnect?.Invoke();
+			OnSurpriseDisconnect?.Invoke(this, EventArgs.Empty);
 		}
 
-		private void Serport1_SerialPortBroke()
+		private void Serport1_SerialPortBroke(object sender, EventArgs e)
 		{
 			//this will cause otherThread to stop and call NotifyOnDisconnect()
 			if (serport1.IsOpen) serport1.Close();

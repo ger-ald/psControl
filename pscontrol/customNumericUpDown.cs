@@ -37,6 +37,10 @@ namespace pscontrol
 	{
 		private CustomNumericUpDown overflow = null;
 		private bool suppressOnValueChanged = false;
+
+		/// <summary>
+		/// This sets the value of the control without triggering the OnValueChanged
+		/// </summary>
 		public decimal ValueNoOnValueChanged
 		{
 			get
@@ -134,7 +138,6 @@ namespace pscontrol
 			//((HandledMouseEventArgs)e_).Handled = true;//not needed here (because of the override)
 		}
 
-		//override windows scroll n lines setting (with scroll 1 'line')
 		protected override void OnValueChanged(EventArgs e_)
 		{
 			if (!suppressOnValueChanged)

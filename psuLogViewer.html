@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>psuLog view</title>
+
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/stock.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+		<script>
+			var d = document.getElementById.bind(document);
+
+			var highChartstock;
+			var filereaderHandle;
+			var customFile;
+			var firstTimeTryReload = true;
+
+			window.onload = onLoadFunc;
+			// onload callback
+			function onLoadFunc() {
+				highChartstock = Highcharts.chart('chart-container', {
+					title: {
+						text: ''
+					},
+					subtitle: {
+						text: 'Click and drag to pan in x direction.'
+					},
+					chart: {
+						//type: 'line',
+						events: {
+							load: function () {
+								initChartData();
+							}
+						},
+						panning: {
+							enabled: true,
+							type: 'x'
+						}
+						//panKey: 'shift',
+						//zoomKey: 'ctrl',
+						//zoomType: 'x'
+					},
+					yAxis: [{
+						labels: {
+							format: '{value}V'
+						},
+						title: {
+							text: 'Volt',
+							style: {
+								color:  '#ff0000'
+							}
+						}
+					},{
+						labels: {
+							format: '{value}A',
+						},
+						title: {
+							text: 'Amp',
+							style: {
+								color:  '#0000ff'
+							}
+						},
+						opposite: true
+					},{
+						labels: {
+							format: '{value}W',
+						},
+						title: {
+							text: 'Watt',
+							style: {
+								color:  '#000000'
+							}
+						},
+						opposite: true
+					},{
+						labels: {
+							format: '{value}'
+						},
+						title: {
+							text: 'Currentlimiting',
+							style: {
+								color:  '#00ff00'
+							}
+						},
+						visible: false,
+						opposite: true
+					}],
+					xAxis: {
+						crosshair: true,
+						//minRange: 1 * 60 * 1000, //1 minute
+						type: 'datetime'
+					},
+					legend: {
+						align: 'center',
+						verticalAlign: 'bottom',
+						y: -38,
+						floating: true,
+						borderWidth: 0
+					},
+					rangeSelector: {
+						enabled: true,
+						selected: 0,
+						allButtonsEnabled: true,
+						buttons: [{
+							type: 'minute',
+							count: 1,
+							text: '1min'
+						},{
+							type: 'minute',
+							count: 2,
+							text: '2min'
+						},{
+							type: 'minute',
+							count: 5,
+							text: '5min'
+						},{
+							type: 'hour',
+							count: 1,
+							text: '1h'
+						},{
+							type: 'hour',
+							count: 2,
+							text: '2h'
+						},{
+							type: 'hour',
+							count: 5,
+							text: '5h'
+						},{
+							type: 'day',
+							count: 1,
+							text: '1d'
+						},{
+							type: 'day',
+							count: 2,
+							text: '2d'
+						},{
+							type: 'day',
+							count: 5,
+							text: '5d'
+						}]
+					},
+				    tooltip: {
+						//footerFormat: 'Reading: {point.x:,.0f}',
+						shared: true
+					},
+					navigator: {
+						enabled: true
+					},
+					series: [{
+						name: 'Volts',
+						yAxis: 0,
+						tooltip: {
+							valueDecimals: 2
+						},
+						data: [],
+						color:  '#e66c37',
+						dataGrouping: {
+							enabled: true
+						},
+						showInNavigator: true
+					},{
+						name: 'spVolts',
+						yAxis: 0,
+						tooltip: {
+							valueDecimals: 2
+						},
+						data: [],
+						color:  '#00ff00',
+						dataGrouping: {
+							enabled: true
+						},
+						showInNavigator: false,
+						dashStyle: 'Dash'
+					},{
+						name: 'Amps',
+						yAxis: 1,
+						tooltip: {
+							valueDecimals: 3
+						},
+						data: [],
+						color:  '#12239e',
+						dataGrouping: {
+							enabled: true
+						},
+						showInNavigator: true
+					},{
+						name: 'spAmps',
+						yAxis: 1,
+						tooltip: {
+							valueDecimals: 3
+						},
+						data: [],
+						color:  '#a0d1ff',
+						dataGrouping: {
+							enabled: true
+						},
+						showInNavigator: false,
+						dashStyle: 'Dash'
+					},{
+						name: 'Currentlimiting',
+						yAxis: 3,
+						tooltip: {
+							valueDecimals: 0
+						},
+						data: [],
+						color:  '#ff0000',
+						dataGrouping: {
+							enabled: true,
+							approximation: "high"
+						},
+						showInNavigator: false,
+						visible: false,
+						step: 'left',
+						dashStyle: 'ShortDot',
+						opacity: 0.5
+					},{
+						name: 'Watt',
+						yAxis: 2,
+						tooltip: {
+							valueDecimals: 3
+						},
+						data: [],
+						color:  '#000000',
+						dataGrouping: {
+							enabled: true
+						},
+						showInNavigator: false,
+						visible: false
+					}],
+					/*exporting: {
+						sourceWidth: 1000,
+						sourceHeight: 400,
+						scale: 2
+					},*/
+					credits: {
+						text: '',
+						href: ''
+					}
+				});
+				
+				filereaderHandle = new FileReader();
+				filereaderHandle.onload = function(e) {
+					updateChartData(e.target.result);
+					d('chooseFileButtonText').innerText = customFile.name;
+					d('chooseFileButton').value = '';//this is where ie gives the type error
+				}
+				filereaderHandle.onerror = function(stuff) {
+					d('chooseFileButton').value = '';
+					var errorStr = "file can't be read:\n" + stuff.target.error;
+					console.log(errorStr);
+					alert(errorStr);
+				}
+			}
+
+			Highcharts.setOptions({
+				global: {
+					useUTC: false
+				}
+			});
+
+			function initChartData() {
+			}
+
+
+			function updateChartData(csvFile) {
+				var table = CSVToArray(csvFile, ';');
+				
+				//clear all points:
+				for (var i = 0; i < highChartstock.series.length; i++) {
+					highChartstock.series[i].setData([], false);
+				}
+
+				//add new points:
+				var csvColRemap = [0, 4, 2, 5, 3, 1];//first index gets skipped
+				var prevDateTime = -1;
+				var interpolateIncrement = -1;
+				var interpolateDateTime = -1;
+				for (var i = 1; i < table.length; i++) {
+					//iterate csv rows
+					var dateTime = Date.parse(table[i][0]);
+					if (dateTime != prevDateTime) {
+						//new date
+						prevDateTime = dateTime;
+						var postI = i;
+						for(; postI < table.length; postI++){
+							//iterate subsequent csv rows
+							if (table[i][0] != table[postI][0]) {
+								//found new date
+								break;
+							}
+						}
+						interpolateIncrement = 1000 / (postI - i);//interpolation is always subsecond (seconds are the smalles unit in the csv time column)
+						interpolateDateTime = dateTime;
+					}
+					else {
+						//still the same date as previous row
+						interpolateDateTime += interpolateIncrement;
+						dateTime = interpolateDateTime;
+					}
+					for(var j = 1; j < table[i].length; j++){
+						//iterate csv cols
+						var numbr = Number(table[i][csvColRemap[j]].replace(',','.'));
+						highChartstock.series[j-1].addPoint([dateTime, numbr], false, false);
+					}
+					if (table[i].length > 5)
+						highChartstock.series[5].addPoint([dateTime, Number(table[i][4].replace(',','.')) * Number(table[i][5].replace(',','.'))], false, false);
+				}
+				console.log(table.length + "*5 pts");
+				highChartstock.redraw();
+			}
+
+			function chooseFileButtonOnChange(e) {
+				customFile = e.files[0];
+				if (customFile !== undefined) {
+					filereaderHandle.readAsText(customFile);//will trigger filereaderHandle.onload
+				}
+			}
+
+			// This will parse a delimited string into an array of
+			// arrays. The default delimiter is the comma, but this
+			// can be overriden in the second argument.
+			function CSVToArray( strData, strDelimiter ) {
+				// Check to see if the delimiter is defined. If not,
+				// then default to comma.
+				strDelimiter = (strDelimiter || ",");
+
+				// Create a regular expression to parse the CSV values.
+				var objPattern = new RegExp(
+						(
+							// Delimiters.
+							"(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+							// Quoted fields.
+							"(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+							// Standard fields.
+							"([^\"\\" + strDelimiter + "\\r\\n]*))"
+						),
+						"gi"
+					);
+
+
+				// Create an array to hold our data. Give the array
+				// a default empty first row.
+				var arrData = [[]];
+
+				// Create an array to hold our individual pattern
+				// matching groups.
+				var arrMatches = null;
+
+
+				// Keep looping over the regular expression matches
+				// until we can no longer find a match.
+				while (arrMatches = objPattern.exec( strData )) {
+					// Get the delimiter that was found.
+					var strMatchedDelimiter = arrMatches[ 1 ];
+
+					// Check to see if the given delimiter has a length
+					// (is not the start of string) and if it matches
+					// field delimiter. If id does not, then we know
+					// that this delimiter is a row delimiter.
+					if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter)) {
+						// Since we have reached a new row of data,
+						// add an empty row to our data array.
+						arrData.push( [] );
+					}
+
+					// Now that we have our delimiter out of the way,
+					// let's check to see which kind of value we
+					// captured (quoted or unquoted).
+					if (arrMatches[ 2 ]){
+						// We found a quoted value. When we capture
+						// this value, unescape any double quotes.
+						var strMatchedValue = arrMatches[ 2 ].replace(
+						new RegExp( "\"\"", "g" ),
+						"\""
+						);
+					} else {
+						// We found a non-quoted value.
+						var strMatchedValue = arrMatches[ 3 ];
+					}
+
+
+					// Now that we have our value string, let's add
+					// it to the data array.
+					arrData[ arrData.length - 1 ].push( strMatchedValue );
+				}
+
+				// Return the parsed data.
+				return( arrData );
+			}
+		</script>
+	</head>
+	<body>
+		<div id="chart-container" style="position: fixed; width: 100%; height: calc(100% - 12px);"></div>
+		<div style="position: absolute; bottom: 2px; left: 2px; font-size:12px;">
+			<input id="chooseFileButton" type="file" onchange="chooseFileButtonOnChange(this)" style="display: none;" />
+			<input type="button" value="Browse..." onclick="d('chooseFileButton').click();" />
+			<div id="chooseFileButtonText" style="display:inline-block">-</div>
+		</div>
+	</body>
+</html>

@@ -67,12 +67,12 @@ namespace pscontrol
 			this.cbIndicatorCV = new System.Windows.Forms.CheckBox();
 			this.cbIndicatorCC = new System.Windows.Forms.CheckBox();
 			this.cbLockInputs = new System.Windows.Forms.CheckBox();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.tmrRateTimer = new System.Windows.Forms.Timer(this.components);
+			this.gbPsuSetpoints = new System.Windows.Forms.GroupBox();
+			this.tmrSecondTimer = new System.Windows.Forms.Timer(this.components);
 			this.lblOutRateDisplay = new System.Windows.Forms.Label();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
-			this.groupBox4 = new System.Windows.Forms.GroupBox();
+			this.gbCommsSetup = new System.Windows.Forms.GroupBox();
+			this.gbPsuOutputs = new System.Windows.Forms.GroupBox();
+			this.gbMemoryButtons = new System.Windows.Forms.GroupBox();
 			this.btnSave5 = new System.Windows.Forms.Button();
 			this.btnLoad5 = new System.Windows.Forms.Button();
 			this.btnSave4 = new System.Windows.Forms.Button();
@@ -83,25 +83,35 @@ namespace pscontrol
 			this.btnLoad2 = new System.Windows.Forms.Button();
 			this.btnSave1 = new System.Windows.Forms.Button();
 			this.btnLoad1 = new System.Windows.Forms.Button();
-			this.customNumericUpDown1 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown2 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown3 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown4 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown5 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown7 = new pscontrol.CustomNumericUpDown();
-			this.customNumericUpDown6 = new pscontrol.CustomNumericUpDown();
+			this.gbRecordPlayback = new System.Windows.Forms.GroupBox();
+			this.label1 = new System.Windows.Forms.Label();
+			this.btnStartStopLog = new System.Windows.Forms.Button();
+			this.lblShowMore = new System.Windows.Forms.Label();
+			this.ofdLogToFile = new System.Windows.Forms.OpenFileDialog();
+			this.cnudLogIntervalSeconds = new pscontrol.CustomNumericUpDown();
+			this.cnudLogIntervalMinutes = new pscontrol.CustomNumericUpDown();
+			this.cnudVoltSetpoint1 = new pscontrol.CustomNumericUpDown();
+			this.cnudVoltSetpoint2 = new pscontrol.CustomNumericUpDown();
+			this.cnudVoltSetpoint3 = new pscontrol.CustomNumericUpDown();
+			this.cnudAmpSetpoint1 = new pscontrol.CustomNumericUpDown();
+			this.cnudAmpSetpoint2 = new pscontrol.CustomNumericUpDown();
+			this.cnudAmpSetpoint3 = new pscontrol.CustomNumericUpDown();
+			this.cnudAmpSetpoint4 = new pscontrol.CustomNumericUpDown();
 			this.statusStrip1.SuspendLayout();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
-			this.groupBox4.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown1)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown2)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown3)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown4)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown5)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown7)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown6)).BeginInit();
+			this.gbPsuSetpoints.SuspendLayout();
+			this.gbCommsSetup.SuspendLayout();
+			this.gbPsuOutputs.SuspendLayout();
+			this.gbMemoryButtons.SuspendLayout();
+			this.gbRecordPlayback.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.cnudLogIntervalSeconds)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudLogIntervalMinutes)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint2)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint3)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint2)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint3)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint4)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// cmbbxComList
@@ -126,11 +136,12 @@ namespace pscontrol
 			// 
 			// statusStrip1
 			// 
+			this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-			this.statusStrip1.Location = new System.Drawing.Point(0, 171);
+			this.statusStrip1.Location = new System.Drawing.Point(0, 170);
 			this.statusStrip1.Name = "statusStrip1";
-			this.statusStrip1.Size = new System.Drawing.Size(605, 22);
+			this.statusStrip1.Size = new System.Drawing.Size(479, 22);
 			this.statusStrip1.TabIndex = 3;
 			this.statusStrip1.Text = "statusStrip1";
 			// 
@@ -259,27 +270,27 @@ namespace pscontrol
 			this.cbLockInputs.UseVisualStyleBackColor = true;
 			this.cbLockInputs.CheckedChanged += new System.EventHandler(this.CbLockInputs_CheckedChanged);
 			// 
-			// groupBox1
+			// gbPsuSetpoints
 			// 
-			this.groupBox1.Controls.Add(this.customNumericUpDown1);
-			this.groupBox1.Controls.Add(this.customNumericUpDown2);
-			this.groupBox1.Controls.Add(this.customNumericUpDown3);
-			this.groupBox1.Controls.Add(this.lblSetpointWatt);
-			this.groupBox1.Controls.Add(this.customNumericUpDown4);
-			this.groupBox1.Controls.Add(this.customNumericUpDown5);
-			this.groupBox1.Controls.Add(this.customNumericUpDown7);
-			this.groupBox1.Controls.Add(this.customNumericUpDown6);
-			this.groupBox1.Location = new System.Drawing.Point(5, 1);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(160, 100);
-			this.groupBox1.TabIndex = 15;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Setpoints";
+			this.gbPsuSetpoints.Controls.Add(this.cnudVoltSetpoint1);
+			this.gbPsuSetpoints.Controls.Add(this.cnudVoltSetpoint2);
+			this.gbPsuSetpoints.Controls.Add(this.cnudVoltSetpoint3);
+			this.gbPsuSetpoints.Controls.Add(this.lblSetpointWatt);
+			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint1);
+			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint2);
+			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint3);
+			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint4);
+			this.gbPsuSetpoints.Location = new System.Drawing.Point(5, 1);
+			this.gbPsuSetpoints.Name = "gbPsuSetpoints";
+			this.gbPsuSetpoints.Size = new System.Drawing.Size(160, 100);
+			this.gbPsuSetpoints.TabIndex = 1;
+			this.gbPsuSetpoints.TabStop = false;
+			this.gbPsuSetpoints.Text = "Setpoints";
 			// 
-			// tmrRateTimer
+			// tmrSecondTimer
 			// 
-			this.tmrRateTimer.Interval = 1000;
-			this.tmrRateTimer.Tick += new System.EventHandler(this.TmrRateTimer_Tick);
+			this.tmrSecondTimer.Interval = 1000;
+			this.tmrSecondTimer.Tick += new System.EventHandler(this.TmrSecondTimer_Tick);
 			// 
 			// lblOutRateDisplay
 			// 
@@ -291,53 +302,53 @@ namespace pscontrol
 			this.lblOutRateDisplay.TabIndex = 22;
 			this.lblOutRateDisplay.Text = " - updates/sec";
 			// 
-			// groupBox2
+			// gbCommsSetup
 			// 
-			this.groupBox2.Controls.Add(this.lblOutRateDisplay);
-			this.groupBox2.Controls.Add(this.cmbbxComList);
-			this.groupBox2.Controls.Add(this.btnComRefresh);
-			this.groupBox2.Controls.Add(this.btnComConnect);
-			this.groupBox2.Location = new System.Drawing.Point(5, 107);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(261, 59);
-			this.groupBox2.TabIndex = 0;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Comms";
+			this.gbCommsSetup.Controls.Add(this.lblOutRateDisplay);
+			this.gbCommsSetup.Controls.Add(this.cmbbxComList);
+			this.gbCommsSetup.Controls.Add(this.btnComRefresh);
+			this.gbCommsSetup.Controls.Add(this.btnComConnect);
+			this.gbCommsSetup.Location = new System.Drawing.Point(5, 107);
+			this.gbCommsSetup.Name = "gbCommsSetup";
+			this.gbCommsSetup.Size = new System.Drawing.Size(261, 59);
+			this.gbCommsSetup.TabIndex = 0;
+			this.gbCommsSetup.TabStop = false;
+			this.gbCommsSetup.Text = "Comms";
 			// 
-			// groupBox3
+			// gbPsuOutputs
 			// 
-			this.groupBox3.Controls.Add(this.cbIndicatorOutEnabled);
-			this.groupBox3.Controls.Add(this.cbIndicatorCC);
-			this.groupBox3.Controls.Add(this.lblOutOhm);
-			this.groupBox3.Controls.Add(this.cbIndicatorCV);
-			this.groupBox3.Controls.Add(this.lblOutWatt);
-			this.groupBox3.Controls.Add(this.lblOutVolt);
-			this.groupBox3.Controls.Add(this.lblOutAmp);
-			this.groupBox3.Location = new System.Drawing.Point(272, 1);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(202, 165);
-			this.groupBox3.TabIndex = 24;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Output";
+			this.gbPsuOutputs.Controls.Add(this.cbIndicatorOutEnabled);
+			this.gbPsuOutputs.Controls.Add(this.cbIndicatorCC);
+			this.gbPsuOutputs.Controls.Add(this.lblOutOhm);
+			this.gbPsuOutputs.Controls.Add(this.cbIndicatorCV);
+			this.gbPsuOutputs.Controls.Add(this.lblOutWatt);
+			this.gbPsuOutputs.Controls.Add(this.lblOutVolt);
+			this.gbPsuOutputs.Controls.Add(this.lblOutAmp);
+			this.gbPsuOutputs.Location = new System.Drawing.Point(272, 1);
+			this.gbPsuOutputs.Name = "gbPsuOutputs";
+			this.gbPsuOutputs.Size = new System.Drawing.Size(202, 165);
+			this.gbPsuOutputs.TabIndex = 2;
+			this.gbPsuOutputs.TabStop = false;
+			this.gbPsuOutputs.Text = "Output";
 			// 
-			// groupBox4
+			// gbMemoryButtons
 			// 
-			this.groupBox4.Controls.Add(this.btnSave5);
-			this.groupBox4.Controls.Add(this.btnLoad5);
-			this.groupBox4.Controls.Add(this.btnSave4);
-			this.groupBox4.Controls.Add(this.btnLoad4);
-			this.groupBox4.Controls.Add(this.btnSave3);
-			this.groupBox4.Controls.Add(this.btnLoad3);
-			this.groupBox4.Controls.Add(this.btnSave2);
-			this.groupBox4.Controls.Add(this.btnLoad2);
-			this.groupBox4.Controls.Add(this.btnSave1);
-			this.groupBox4.Controls.Add(this.btnLoad1);
-			this.groupBox4.Location = new System.Drawing.Point(480, 1);
-			this.groupBox4.Name = "groupBox4";
-			this.groupBox4.Size = new System.Drawing.Size(120, 165);
-			this.groupBox4.TabIndex = 25;
-			this.groupBox4.TabStop = false;
-			this.groupBox4.Text = "Memory";
+			this.gbMemoryButtons.Controls.Add(this.btnSave5);
+			this.gbMemoryButtons.Controls.Add(this.btnLoad5);
+			this.gbMemoryButtons.Controls.Add(this.btnSave4);
+			this.gbMemoryButtons.Controls.Add(this.btnLoad4);
+			this.gbMemoryButtons.Controls.Add(this.btnSave3);
+			this.gbMemoryButtons.Controls.Add(this.btnLoad3);
+			this.gbMemoryButtons.Controls.Add(this.btnSave2);
+			this.gbMemoryButtons.Controls.Add(this.btnLoad2);
+			this.gbMemoryButtons.Controls.Add(this.btnSave1);
+			this.gbMemoryButtons.Controls.Add(this.btnLoad1);
+			this.gbMemoryButtons.Location = new System.Drawing.Point(480, 1);
+			this.gbMemoryButtons.Name = "gbMemoryButtons";
+			this.gbMemoryButtons.Size = new System.Drawing.Size(120, 165);
+			this.gbMemoryButtons.TabIndex = 4;
+			this.gbMemoryButtons.TabStop = false;
+			this.gbMemoryButtons.Text = "Memory";
 			// 
 			// btnSave5
 			// 
@@ -439,181 +450,274 @@ namespace pscontrol
 			this.btnLoad1.UseVisualStyleBackColor = true;
 			this.btnLoad1.Click += new System.EventHandler(this.btnLoad_Click);
 			// 
-			// customNumericUpDown1
+			// gbRecordPlayback
 			// 
-			this.customNumericUpDown1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown1.Location = new System.Drawing.Point(9, 16);
-			this.customNumericUpDown1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown1.Maximum = new decimal(new int[] {
+			this.gbRecordPlayback.Controls.Add(this.label1);
+			this.gbRecordPlayback.Controls.Add(this.cnudLogIntervalSeconds);
+			this.gbRecordPlayback.Controls.Add(this.cnudLogIntervalMinutes);
+			this.gbRecordPlayback.Controls.Add(this.btnStartStopLog);
+			this.gbRecordPlayback.Location = new System.Drawing.Point(606, 1);
+			this.gbRecordPlayback.Name = "gbRecordPlayback";
+			this.gbRecordPlayback.Size = new System.Drawing.Size(110, 165);
+			this.gbRecordPlayback.TabIndex = 12;
+			this.gbRecordPlayback.TabStop = false;
+			this.gbRecordPlayback.Text = "Record/Playback";
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(6, 46);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(90, 13);
+			this.label1.TabIndex = 5;
+			this.label1.Text = "Log interval: (m s)";
+			// 
+			// btnStartStopLog
+			// 
+			this.btnStartStopLog.Location = new System.Drawing.Point(6, 20);
+			this.btnStartStopLog.Name = "btnStartStopLog";
+			this.btnStartStopLog.Size = new System.Drawing.Size(75, 23);
+			this.btnStartStopLog.TabIndex = 1;
+			this.btnStartStopLog.Text = "Start Log";
+			this.btnStartStopLog.UseVisualStyleBackColor = true;
+			this.btnStartStopLog.Click += new System.EventHandler(this.btnStartStopLog_Click);
+			// 
+			// lblShowMore
+			// 
+			this.lblShowMore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.lblShowMore.AutoSize = true;
+			this.lblShowMore.BackColor = System.Drawing.Color.Transparent;
+			this.lblShowMore.Cursor = System.Windows.Forms.Cursors.Hand;
+			this.lblShowMore.Location = new System.Drawing.Point(430, 173);
+			this.lblShowMore.Name = "lblShowMore";
+			this.lblShowMore.Size = new System.Drawing.Size(43, 13);
+			this.lblShowMore.TabIndex = 13;
+			this.lblShowMore.Text = "More>>";
+			this.lblShowMore.Click += new System.EventHandler(this.lblShowMore_Click);
+			// 
+			// ofdLogToFile
+			// 
+			this.ofdLogToFile.CheckFileExists = false;
+			// 
+			// cnudLogIntervalSeconds
+			// 
+			this.cnudLogIntervalSeconds.Location = new System.Drawing.Point(39, 62);
+			this.cnudLogIntervalSeconds.Maximum = new decimal(new int[] {
+            59,
+            0,
+            0,
+            0});
+			this.cnudLogIntervalSeconds.Name = "cnudLogIntervalSeconds";
+			this.cnudLogIntervalSeconds.Size = new System.Drawing.Size(32, 20);
+			this.cnudLogIntervalSeconds.TabIndex = 4;
+			this.cnudLogIntervalSeconds.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.cnudLogIntervalSeconds.ValueNoOnValueChanged = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.cnudLogIntervalSeconds.ValueChanged += new System.EventHandler(this.cnudLogIntervals_ValueChanged);
+			// 
+			// cnudLogIntervalMinutes
+			// 
+			this.cnudLogIntervalMinutes.Location = new System.Drawing.Point(6, 62);
+			this.cnudLogIntervalMinutes.Name = "cnudLogIntervalMinutes";
+			this.cnudLogIntervalMinutes.Size = new System.Drawing.Size(32, 20);
+			this.cnudLogIntervalMinutes.TabIndex = 3;
+			this.cnudLogIntervalMinutes.ValueNoOnValueChanged = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+			this.cnudLogIntervalMinutes.ValueChanged += new System.EventHandler(this.cnudLogIntervals_ValueChanged);
+			// 
+			// cnudVoltSetpoint1
+			// 
+			this.cnudVoltSetpoint1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudVoltSetpoint1.Location = new System.Drawing.Point(9, 16);
+			this.cnudVoltSetpoint1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudVoltSetpoint1.Maximum = new decimal(new int[] {
             31,
             0,
             0,
             0});
-			this.customNumericUpDown1.Name = "customNumericUpDown1";
-			this.customNumericUpDown1.Size = new System.Drawing.Size(42, 22);
-			this.customNumericUpDown1.TabIndex = 3;
-			this.customNumericUpDown1.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudVoltSetpoint1.Name = "cnudVoltSetpoint1";
+			this.cnudVoltSetpoint1.Size = new System.Drawing.Size(42, 22);
+			this.cnudVoltSetpoint1.TabIndex = 3;
+			this.cnudVoltSetpoint1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.cnudVoltSetpoint1.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown1.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			this.cnudVoltSetpoint1.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown2
+			// cnudVoltSetpoint2
 			// 
-			this.customNumericUpDown2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown2.Location = new System.Drawing.Point(57, 16);
-			this.customNumericUpDown2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown2.Maximum = new decimal(new int[] {
+			this.cnudVoltSetpoint2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudVoltSetpoint2.Location = new System.Drawing.Point(57, 16);
+			this.cnudVoltSetpoint2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudVoltSetpoint2.Maximum = new decimal(new int[] {
             9,
             0,
             0,
             0});
-			this.customNumericUpDown2.Name = "customNumericUpDown2";
-			this.customNumericUpDown2.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown2.TabIndex = 4;
-			this.customNumericUpDown2.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudVoltSetpoint2.Name = "cnudVoltSetpoint2";
+			this.cnudVoltSetpoint2.Size = new System.Drawing.Size(29, 22);
+			this.cnudVoltSetpoint2.TabIndex = 4;
+			this.cnudVoltSetpoint2.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown2.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			this.cnudVoltSetpoint2.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown3
+			// cnudVoltSetpoint3
 			// 
-			this.customNumericUpDown3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown3.Location = new System.Drawing.Point(87, 16);
-			this.customNumericUpDown3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown3.Maximum = new decimal(new int[] {
+			this.cnudVoltSetpoint3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudVoltSetpoint3.Location = new System.Drawing.Point(87, 16);
+			this.cnudVoltSetpoint3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudVoltSetpoint3.Maximum = new decimal(new int[] {
             9,
             0,
             0,
             0});
-			this.customNumericUpDown3.Name = "customNumericUpDown3";
-			this.customNumericUpDown3.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown3.TabIndex = 5;
-			this.customNumericUpDown3.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudVoltSetpoint3.Name = "cnudVoltSetpoint3";
+			this.cnudVoltSetpoint3.Size = new System.Drawing.Size(29, 22);
+			this.cnudVoltSetpoint3.TabIndex = 5;
+			this.cnudVoltSetpoint3.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown3.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedVoltage);
+			this.cnudVoltSetpoint3.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown4
+			// cnudAmpSetpoint1
 			// 
-			this.customNumericUpDown4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown4.Location = new System.Drawing.Point(22, 46);
-			this.customNumericUpDown4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown4.Maximum = new decimal(new int[] {
+			this.cnudAmpSetpoint1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudAmpSetpoint1.Location = new System.Drawing.Point(22, 46);
+			this.cnudAmpSetpoint1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudAmpSetpoint1.Maximum = new decimal(new int[] {
             5,
             0,
             0,
             0});
-			this.customNumericUpDown4.Name = "customNumericUpDown4";
-			this.customNumericUpDown4.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown4.TabIndex = 6;
-			this.customNumericUpDown4.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudAmpSetpoint1.Name = "cnudAmpSetpoint1";
+			this.cnudAmpSetpoint1.Size = new System.Drawing.Size(29, 22);
+			this.cnudAmpSetpoint1.TabIndex = 6;
+			this.cnudAmpSetpoint1.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown4.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			this.cnudAmpSetpoint1.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown5
+			// cnudAmpSetpoint2
 			// 
-			this.customNumericUpDown5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown5.Location = new System.Drawing.Point(57, 46);
-			this.customNumericUpDown5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown5.Maximum = new decimal(new int[] {
+			this.cnudAmpSetpoint2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudAmpSetpoint2.Location = new System.Drawing.Point(57, 46);
+			this.cnudAmpSetpoint2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudAmpSetpoint2.Maximum = new decimal(new int[] {
             9,
             0,
             0,
             0});
-			this.customNumericUpDown5.Name = "customNumericUpDown5";
-			this.customNumericUpDown5.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown5.TabIndex = 7;
-			this.customNumericUpDown5.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudAmpSetpoint2.Name = "cnudAmpSetpoint2";
+			this.cnudAmpSetpoint2.Size = new System.Drawing.Size(29, 22);
+			this.cnudAmpSetpoint2.TabIndex = 7;
+			this.cnudAmpSetpoint2.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown5.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			this.cnudAmpSetpoint2.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown7
+			// cnudAmpSetpoint3
 			// 
-			this.customNumericUpDown7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown7.Location = new System.Drawing.Point(117, 46);
-			this.customNumericUpDown7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown7.Maximum = new decimal(new int[] {
+			this.cnudAmpSetpoint3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudAmpSetpoint3.Location = new System.Drawing.Point(117, 46);
+			this.cnudAmpSetpoint3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudAmpSetpoint3.Maximum = new decimal(new int[] {
             9,
             0,
             0,
             0});
-			this.customNumericUpDown7.Name = "customNumericUpDown7";
-			this.customNumericUpDown7.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown7.TabIndex = 9;
-			this.customNumericUpDown7.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudAmpSetpoint3.Name = "cnudAmpSetpoint3";
+			this.cnudAmpSetpoint3.Size = new System.Drawing.Size(29, 22);
+			this.cnudAmpSetpoint3.TabIndex = 9;
+			this.cnudAmpSetpoint3.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown7.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			this.cnudAmpSetpoint3.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
 			// 
-			// customNumericUpDown6
+			// cnudAmpSetpoint4
 			// 
-			this.customNumericUpDown6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.customNumericUpDown6.Location = new System.Drawing.Point(87, 46);
-			this.customNumericUpDown6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-			this.customNumericUpDown6.Maximum = new decimal(new int[] {
+			this.cnudAmpSetpoint4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cnudAmpSetpoint4.Location = new System.Drawing.Point(87, 46);
+			this.cnudAmpSetpoint4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.cnudAmpSetpoint4.Maximum = new decimal(new int[] {
             9,
             0,
             0,
             0});
-			this.customNumericUpDown6.Name = "customNumericUpDown6";
-			this.customNumericUpDown6.Size = new System.Drawing.Size(29, 22);
-			this.customNumericUpDown6.TabIndex = 8;
-			this.customNumericUpDown6.ValueNoOnValueChanged = new decimal(new int[] {
+			this.cnudAmpSetpoint4.Name = "cnudAmpSetpoint4";
+			this.cnudAmpSetpoint4.Size = new System.Drawing.Size(29, 22);
+			this.cnudAmpSetpoint4.TabIndex = 8;
+			this.cnudAmpSetpoint4.ValueNoOnValueChanged = new decimal(new int[] {
             0,
             0,
             0,
             0});
-			this.customNumericUpDown6.ValueChanged += new System.EventHandler(this.CustomNumericUpDowns_ValueChangedCurrent);
+			this.cnudAmpSetpoint4.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(605, 193);
+			this.ClientSize = new System.Drawing.Size(479, 192);
+			this.Controls.Add(this.lblShowMore);
+			this.Controls.Add(this.gbRecordPlayback);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.cbLockInputs);
 			this.Controls.Add(this.cbOutEnable);
-			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.groupBox2);
-			this.Controls.Add(this.groupBox3);
-			this.Controls.Add(this.groupBox4);
-			this.MaximumSize = new System.Drawing.Size(621, 232);
+			this.Controls.Add(this.gbPsuSetpoints);
+			this.Controls.Add(this.gbCommsSetup);
+			this.Controls.Add(this.gbPsuOutputs);
+			this.Controls.Add(this.gbMemoryButtons);
+			this.MaximumSize = new System.Drawing.Size(738, 231);
 			this.MinimumSize = new System.Drawing.Size(287, 60);
 			this.Name = "Form1";
 			this.ShowIcon = false;
 			this.Text = "psControl";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			this.Load += new System.EventHandler(this.Form1_Load);
+			this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox1.PerformLayout();
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
-			this.groupBox4.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown1)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown2)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown3)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown4)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown5)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown7)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.customNumericUpDown6)).EndInit();
+			this.gbPsuSetpoints.ResumeLayout(false);
+			this.gbPsuSetpoints.PerformLayout();
+			this.gbCommsSetup.ResumeLayout(false);
+			this.gbCommsSetup.PerformLayout();
+			this.gbPsuOutputs.ResumeLayout(false);
+			this.gbPsuOutputs.PerformLayout();
+			this.gbMemoryButtons.ResumeLayout(false);
+			this.gbRecordPlayback.ResumeLayout(false);
+			this.gbRecordPlayback.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.cnudLogIntervalSeconds)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudLogIntervalMinutes)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint3)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint3)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.cnudAmpSetpoint4)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -623,13 +727,13 @@ namespace pscontrol
 		private System.Windows.Forms.ComboBox cmbbxComList;
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-		private CustomNumericUpDown customNumericUpDown1;
-		private CustomNumericUpDown customNumericUpDown2;
-		private CustomNumericUpDown customNumericUpDown3;
-		private CustomNumericUpDown customNumericUpDown4;
-		private CustomNumericUpDown customNumericUpDown5;
-		private CustomNumericUpDown customNumericUpDown6;
-		private CustomNumericUpDown customNumericUpDown7;
+		private CustomNumericUpDown cnudVoltSetpoint1;
+		private CustomNumericUpDown cnudVoltSetpoint2;
+		private CustomNumericUpDown cnudVoltSetpoint3;
+		private CustomNumericUpDown cnudAmpSetpoint1;
+		private CustomNumericUpDown cnudAmpSetpoint2;
+		private CustomNumericUpDown cnudAmpSetpoint4;
+		private CustomNumericUpDown cnudAmpSetpoint3;
 		private System.Windows.Forms.Label lblSetpointWatt;
 		private System.Windows.Forms.Label lblOutVolt;
 		private System.Windows.Forms.Label lblOutAmp;
@@ -640,12 +744,12 @@ namespace pscontrol
 		private System.Windows.Forms.CheckBox cbIndicatorCV;
 		private System.Windows.Forms.CheckBox cbIndicatorCC;
 		private System.Windows.Forms.CheckBox cbLockInputs;
-		private System.Windows.Forms.Timer tmrRateTimer;
+		private System.Windows.Forms.Timer tmrSecondTimer;
 		private System.Windows.Forms.Label lblOutRateDisplay;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.GroupBox groupBox3;
-		private System.Windows.Forms.GroupBox groupBox4;
+		private System.Windows.Forms.GroupBox gbPsuSetpoints;
+		private System.Windows.Forms.GroupBox gbCommsSetup;
+		private System.Windows.Forms.GroupBox gbPsuOutputs;
+		private System.Windows.Forms.GroupBox gbMemoryButtons;
 		private System.Windows.Forms.Button btnComRefresh;
 		private System.Windows.Forms.Button btnComConnect;
 		private System.Windows.Forms.Button btnLoad1;
@@ -658,6 +762,13 @@ namespace pscontrol
 		private System.Windows.Forms.Button btnLoad4;
 		private System.Windows.Forms.Button btnSave5;
 		private System.Windows.Forms.Button btnLoad5;
+		private System.Windows.Forms.GroupBox gbRecordPlayback;
+		private System.Windows.Forms.Button btnStartStopLog;
+		private System.Windows.Forms.Label lblShowMore;
+		private System.Windows.Forms.OpenFileDialog ofdLogToFile;
+		private CustomNumericUpDown cnudLogIntervalSeconds;
+		private CustomNumericUpDown cnudLogIntervalMinutes;
+		private System.Windows.Forms.Label label1;
 	}
 }
 

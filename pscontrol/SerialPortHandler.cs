@@ -61,8 +61,7 @@ namespace pscontrol
 		private BlockingCollection<SerialTask> toSerThreadQueue;
 		private BlockingCollection<SerialTask> fromSerThreadQueue;
 
-		public delegate void SerialBroke_Delegate();
-		public event SerialBroke_Delegate SerialPortBroke;
+		public event EventHandler SerialPortBroke;
 
 
 		
@@ -91,7 +90,7 @@ namespace pscontrol
 			}
 
 			//notify eventhandlers
-			SerialPortBroke?.Invoke();
+			SerialPortBroke?.Invoke(this, EventArgs.Empty);
 		}
 
 		private void StartSerThread()

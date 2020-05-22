@@ -28,26 +28,38 @@ using System.Globalization;
 using System.Collections.Generic;
 using Win32PortEnumerate;
 using System.Linq;
+using System.Drawing;
+using System.IO;
 
 namespace pscontrol
 {
 	public partial class Form1 : Form
 	{
 		private KA3005P psu;
+		private bool logging = false;
+		private string loggingFileName = "";
+		private StreamWriter logFileStream;
+		private int loggingInterval = 1;
+		private int loggingIntervalCnt = 0;
 
 		private int updatesCounter = 0;
+		private int form1WidthWhenShowingLess = 0;
 
 		public Form1()
 		{
 			InitializeComponent();
 			//set voltage numupdowns:
-			customNumericUpDown3.SetOverflow(customNumericUpDown2);
-			customNumericUpDown2.SetOverflow(customNumericUpDown1);
+			cnudVoltSetpoint3.SetOverflow(cnudVoltSetpoint2);
+			cnudVoltSetpoint2.SetOverflow(cnudVoltSetpoint1);
 
 			//set current numupdowns:
-			customNumericUpDown7.SetOverflow(customNumericUpDown6);
-			customNumericUpDown6.SetOverflow(customNumericUpDown5);
-			customNumericUpDown5.SetOverflow(customNumericUpDown4);
+			cnudAmpSetpoint3.SetOverflow(cnudAmpSetpoint4);
+			cnudAmpSetpoint4.SetOverflow(cnudAmpSetpoint2);
+			cnudAmpSetpoint2.SetOverflow(cnudAmpSetpoint1);
+
+			cnudLogIntervalSeconds.SetOverflow(cnudLogIntervalMinutes);
+
+			form1WidthWhenShowingLess = this.Width;
 
 			psu = new KA3005P();
 			psu.OnSurpriseDisconnect += psu_OnSurpriseDisconnect;
@@ -55,16 +67,7 @@ namespace pscontrol
 			psu.OnOutputUpdate += psu_OnOutputUpdate;
 
 			toolStripStatusLabel1.Text = "";
-			EnableInputs(false);
-		}
-
-		private void psu_OnSurpriseDisconnect()
-		{
-			btnComConnect.BeginInvoke((MethodInvoker)delegate ()
-			{
-				toolStripStatusLabel1.Text = "lost comport";
-				StopComms();
-			});
+			ConnectedChange(false);
 		}
 
 		private void RefreshDropdown()
@@ -100,11 +103,25 @@ namespace pscontrol
 			}
 		}
 
-		private void EnableInputs(bool newState)
+		/// <summary>
+		/// Enables and disables the controls that can change the output of the psu
+		/// </summary>
+		/// <param name="enabled">enable psu changable inputs or not</param>
+		private void EnableInputs(bool enabled)
 		{
-			cbOutEnable.Enabled = newState;
-			groupBox1.Enabled = newState;
-			groupBox4.Enabled = newState;
+			cbOutEnable.Enabled = enabled;
+			gbPsuSetpoints.Enabled = enabled;
+			gbMemoryButtons.Enabled = enabled;
+		}
+
+		/// <summary>
+		/// This enables or disables all psu connection related form controls
+		/// </summary>
+		/// <param name="isConnected">what connectionstate changed to</param>
+		private void ConnectedChange(bool isConnected)
+		{
+			EnableInputs(isConnected && !cbLockInputs.Checked);
+			gbRecordPlayback.Enabled = isConnected;
 		}
 
 		/// <summary>
@@ -142,33 +159,42 @@ namespace pscontrol
 				lblOutOhm.Text = (resistance / 1000.0).ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + " kΩ";//can go up to 999.999
 		}
 
-		private void psu_OnSetpointUpdate()
+		private void psu_OnSurpriseDisconnect(object sender, EventArgs e)
 		{
-			customNumericUpDown1.BeginInvoke((MethodInvoker)delegate ()
+			btnComConnect.BeginInvoke((MethodInvoker)delegate ()
+			{
+				toolStripStatusLabel1.Text = "Lost connection";
+				StopComms();
+			});
+		}
+
+		private void psu_OnSetpointUpdate(object sender, EventArgs e)
+		{
+			cnudVoltSetpoint1.BeginInvoke((MethodInvoker)delegate ()
 			{
 				int spV = (int)((psu.SetpointV * 100) + 0.5);
 				int spI = (int)((psu.SetpointI * 1000) + 0.5);
 				//voltage:
 				if (spV >= 0)
 				{
-					customNumericUpDown1.ValueNoOnValueChanged = (spV / 100);
-					customNumericUpDown2.ValueNoOnValueChanged = (decimal)(spV / 10) % 10;
-					customNumericUpDown3.ValueNoOnValueChanged = (decimal)spV % 10;
+					cnudVoltSetpoint1.ValueNoOnValueChanged = (spV / 100);
+					cnudVoltSetpoint2.ValueNoOnValueChanged = (decimal)(spV / 10) % 10;
+					cnudVoltSetpoint3.ValueNoOnValueChanged = (decimal)spV % 10;
 				}
 				//current:
 				if (spI >= 0)
 				{
-					customNumericUpDown4.ValueNoOnValueChanged = (spI / 1000);
-					customNumericUpDown5.ValueNoOnValueChanged = (decimal)(spI / 100) % 10;
-					customNumericUpDown6.ValueNoOnValueChanged = (decimal)(spI / 10) % 10;
-					customNumericUpDown7.ValueNoOnValueChanged = (decimal)spI % 10;
+					cnudAmpSetpoint1.ValueNoOnValueChanged = (spI / 1000);
+					cnudAmpSetpoint2.ValueNoOnValueChanged = (decimal)(spI / 100) % 10;
+					cnudAmpSetpoint4.ValueNoOnValueChanged = (decimal)(spI / 10) % 10;
+					cnudAmpSetpoint3.ValueNoOnValueChanged = (decimal)spI % 10;
 				}
 
 				lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 			});
 		}
 
-		private void psu_OnOutputUpdate()
+		private void psu_OnOutputUpdate(object sender, EventArgs e)
 		{
 			lblOutVolt.BeginInvoke((MethodInvoker)delegate ()
 			{
@@ -177,6 +203,13 @@ namespace pscontrol
 				lblOutAmp.Text = psu.OutputI.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " A";//can go up to 99.999
 				UpdateWattOhm(psu.OutputV, psu.OutputI);
 				updatesCounter++;
+
+				if (logging && (loggingInterval == 0))
+				{
+					//as fast as possible:
+					loggingIntervalCnt = 0;
+					WriteLogLine();
+				}
 			});
 		}
 
@@ -189,15 +222,16 @@ namespace pscontrol
 			{
 				connected = psu.Connect((cmbbxComList.SelectedItem as SerialPortDevice).Port);
 			}
-			catch (Exception ex)
+			catch (UnauthorizedAccessException ex)
 			{
-				toolStripStatusLabel1.Text = "error opening port " + ex.Message;
+				//port is already open
+				toolStripStatusLabel1.Text = "Error: " + ex.Message;
 				return;
 			}
 
 			if (!connected)
 			{
-				toolStripStatusLabel1.Text = "couldn't find device";
+				toolStripStatusLabel1.Text = "Error: Couldn't find device";
 				return;
 			}
 			cbOutEnable.Checked = psu.OutputEnabled;
@@ -207,25 +241,29 @@ namespace pscontrol
 			cmbbxComList.Enabled = false;
 			btnComRefresh.Enabled = false;
 			btnComConnect.Text = "Disconnect";
-			toolStripStatusLabel1.Text = "connected";
+			toolStripStatusLabel1.Text = "Connected";
 
-			//enable stats:
+			//enable updateStats:
 			updatesCounter = 0;
-			tmrRateTimer.Enabled = true;
+			tmrSecondTimer.Enabled = true;
 
-			if (!cbLockInputs.Checked) EnableInputs(true);
+			ConnectedChange(true);
 		}
 
 		private void StopComms()
 		{
-			EnableInputs(false);
+			if (logging)
+			{
+				StopLogging();
+			}
+			ConnectedChange(false);
 			//disable comms processing:
 			btnComConnect.Text = "Connect";
 			psu.Disconnect();
 			cmbbxComList.Enabled = true;
 			btnComRefresh.Enabled = true;
-			//disable stats:
-			tmrRateTimer.Enabled = false;
+			//disable updateStats:
+			tmrSecondTimer.Enabled = false;
 			lblOutRateDisplay.Text = " - updates/sec";
 
 			RefreshDropdown();
@@ -240,6 +278,10 @@ namespace pscontrol
 
 		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			if (logging)
+			{
+				StopLogging();
+			}
 			psu.Disconnect();
 		}
 
@@ -261,16 +303,16 @@ namespace pscontrol
 			}
 		}
 
-		private void CustomNumericUpDowns_ValueChangedVoltage(object sender, EventArgs e)
+		private void CnudVoltSetpoint_ValueChangeds(object sender, EventArgs e)
 		{
-			double voltage = (double)customNumericUpDown1.Value + (double)customNumericUpDown2.Value / 10 + (double)customNumericUpDown3.Value / 100;
+			double voltage = (double)cnudVoltSetpoint1.Value + (double)cnudVoltSetpoint2.Value / 10 + (double)cnudVoltSetpoint3.Value / 100;
 			psu.SetpointV = voltage;
 			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 		}
 
-		private void CustomNumericUpDowns_ValueChangedCurrent(object sender, EventArgs e)
+		private void CnudAmpSetpoint_ValueChangeds(object sender, EventArgs e)
 		{
-			double current = (double)customNumericUpDown4.Value + (double)customNumericUpDown5.Value / 10 + (double)customNumericUpDown6.Value / 100 + (double)customNumericUpDown7.Value / 1000;
+			double current = (double)cnudAmpSetpoint1.Value + (double)cnudAmpSetpoint2.Value / 10 + (double)cnudAmpSetpoint4.Value / 100 + (double)cnudAmpSetpoint3.Value / 1000;
 			psu.SetpointI = current;
 			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 		}
@@ -285,10 +327,20 @@ namespace pscontrol
 			EnableInputs((!cbLockInputs.Checked) && psu.IsConnected);
 		}
 
-		private void TmrRateTimer_Tick(object sender, EventArgs e)
+		private void TmrSecondTimer_Tick(object sender, EventArgs e)
 		{
-			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrRateTimer.Interval / 1000.0)).ToString("#0", new CultureInfo("en-US")).PadLeft(2) + " updates/sec";
+			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrSecondTimer.Interval / 1000.0)).ToString("#0", new CultureInfo("en-US")).PadLeft(2) + " updates/sec";
 			updatesCounter = 0;
+
+			if (logging && (loggingInterval > 0))
+			{
+				loggingIntervalCnt++;
+				if (loggingIntervalCnt >= loggingInterval)
+				{
+					loggingIntervalCnt = 0;
+					WriteLogLine();
+				}
+			}
 		}
 
 		private void btnLoad_Click(object sender, EventArgs e)
@@ -303,6 +355,82 @@ namespace pscontrol
 			byte index = byte.Parse(((Button)sender).Text.Split(' ')[1]);
 			psu.Save(index);
 			cbOutEnable.Checked = false;
+		}
+
+		private void lblShowMore_Click(object sender, EventArgs e)
+		{
+			this.Width = lblShowMore.Text.StartsWith("More")? this.MaximumSize.Width : form1WidthWhenShowingLess;
+		}
+
+		private void Form1_SizeChanged(object sender, EventArgs e)
+		{
+			lblShowMore.Text = (this.Width < this.MaximumSize.Width)? "More>>" : "Less<<";
+		}
+
+		private void StartLogging()
+		{
+			ofdLogToFile.Title = "Log to file";
+			ofdLogToFile.FileName = "psuLog_" + DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".csv";
+
+			//ShowDialog() is blocking but thats ok
+			DialogResult res = ofdLogToFile.ShowDialog();
+			if (res == DialogResult.OK)
+			{
+				btnStartStopLog.Text = "Stop log";
+				loggingFileName = ofdLogToFile.FileName;
+				try
+				{
+					FileStream logFile = new FileStream(loggingFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+					logFileStream = new StreamWriter(logFile);
+				}
+				catch (UnauthorizedAccessException ex)
+				{
+					toolStripStatusLabel1.Text = "Error: " + ex.Message;
+					return;
+				}
+				toolStripStatusLabel1.Text = "";
+				logFileStream.WriteLine("Time;CC Mode;spVolts;spAmps;Volts;Amps");
+				logFileStream.Flush();
+
+				loggingInterval = ((int)cnudLogIntervalMinutes.Value * 60) + (int)cnudLogIntervalSeconds.Value;
+				loggingIntervalCnt = 0;
+				logging = true;
+			}
+		}
+
+		private void WriteLogLine()
+		{
+			//logFileStream.WriteLine($"{(UInt64)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds};{(psu.IsInCCmode ? 1 : 0)};{(psu.OutputEnabled ? psu.SetpointV : 0)};{psu.SetpointI};{psu.OutputV};{psu.OutputI}");//log as utc timestamp
+			//logFileStream.WriteLine($"{DateTime.UtcNow.ToString("O")};{(psu.IsInCCmode ? 1 : 0)};{(psu.OutputEnabled ? psu.SetpointV : 0)};{psu.SetpointI};{psu.OutputV};{psu.OutputI}");//log as utc standard string
+			logFileStream.WriteLine($"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")};{(psu.IsInCCmode ? 1 : 0)};{(psu.OutputEnabled ? psu.SetpointV : 0)};{psu.SetpointI};{psu.OutputV};{psu.OutputI}");//log as local formatted string (also localized '.' or ',' use for decimal seperator)(tested compatible with dutch m. excel)
+			logFileStream.Flush();
+		}
+
+		private void StopLogging()
+		{
+			logging = false;
+			logFileStream.Close();
+			logFileStream = null;
+			btnStartStopLog.Text = "Start log";
+		}
+
+		private void btnStartStopLog_Click(object sender, EventArgs e)
+		{
+			if (!logging)
+			{
+				//logging is off so start logging
+				StartLogging();
+			}
+			else
+			{
+				//we are logging so stop logging
+				StopLogging();
+			}
+		}
+
+		private void cnudLogIntervals_ValueChanged(object sender, EventArgs e)
+		{
+			loggingInterval = ((int)cnudLogIntervalMinutes.Value * 60) + (int)cnudLogIntervalSeconds.Value;
 		}
 	}
 }
