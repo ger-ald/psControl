@@ -30,6 +30,7 @@ using Win32PortEnumerate;
 using System.Linq;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 
 namespace pscontrol
 {
@@ -48,6 +49,10 @@ namespace pscontrol
 		public Form1()
 		{
 			InitializeComponent();
+			//append the version to our window title:
+			Version version = Assembly.GetEntryAssembly().GetName().Version;
+			this.Text += $"{version.Major}.{version.Minor}.{version.Build}{((version.Revision > 0) ? ("b" + version.Revision) : "")}";//append version and leave beta off if it is 0 (a release)
+
 			//set voltage numupdowns:
 			cnudVoltSetpoint3.SetOverflow(cnudVoltSetpoint2);
 			cnudVoltSetpoint2.SetOverflow(cnudVoltSetpoint1);
@@ -73,16 +78,8 @@ namespace pscontrol
 		private void RefreshDropdown()
 		{
 			List<SerialPortDevice> devices = new List<SerialPortDevice>();
-			//try
-			//{
-				devices = SerialPortEnumerator.Enumerate().ToList();
-			/*}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"{ex.Message}\n\n{ex.StackTrace}");
-			}*/
+			devices = SerialPortEnumerator.Enumerate().ToList();
 			devices.Sort((x, y) => NativeMethods.StrCmpLogicalW(x.Port, y.Port));
-			//devices.ForEach(device => Console.WriteLine($"Found port:\n  Port:         {device.Port}\n  Description:  {device.Description}\n  FriendlyName: {device.FriendlyName}\n  BusReported:  {device.BusReportedDeviceDescription}\n  deviceID:     {device.DeviceID}"));
 
 			string prevSelection = cmbbxComList.Text;
 			cmbbxComList.Items.Clear();
@@ -225,6 +222,12 @@ namespace pscontrol
 			catch (UnauthorizedAccessException ex)
 			{
 				//port is already open
+				toolStripStatusLabel1.Text = "Error: " + ex.Message;
+				return;
+			}
+			catch (IOException ex)
+			{
+				//tried to open a removed port
 				toolStripStatusLabel1.Text = "Error: " + ex.Message;
 				return;
 			}

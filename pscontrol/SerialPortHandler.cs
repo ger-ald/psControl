@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
@@ -200,7 +201,20 @@ namespace pscontrol
 		public void Open(string portname)
 		{
 			serialPort.PortName = portname;
-			serialPort.Open();
+			try
+			{
+				serialPort.Open();
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				//port is already opened by another application
+				throw ex;
+			}
+			catch (IOException ex)
+			{
+				//tried to open a removed port
+				throw ex;
+			}
 			StartSerThread();
 		}
 

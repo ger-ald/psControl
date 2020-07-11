@@ -101,7 +101,7 @@
 					},
 					rangeSelector: {
 						enabled: true,
-						selected: 0,
+						selected: 3,
 						allButtonsEnabled: true,
 						buttons: [{
 							type: 'minute',
@@ -244,7 +244,7 @@
 				filereaderHandle.onload = function(e) {
 					updateChartData(e.target.result);
 					d('chooseFileButtonText').innerText = customFile.name;
-					d('chooseFileButton').value = '';//this is where ie gives the type error
+					//d('chooseFileButton').value = '';//this is where ie gives the type error
 				}
 				filereaderHandle.onerror = function(stuff) {
 					d('chooseFileButton').value = '';
