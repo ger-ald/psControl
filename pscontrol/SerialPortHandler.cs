@@ -28,14 +28,18 @@ using System.IO;
 using System.IO.Ports;
 using System.Text;
 using System.Threading;
+using Win32SerialPort;
 
 namespace pscontrol
 {
 	class SerialPortHandler
 	{
-		private const int SERIAL_RECV_LEN = 20;
+		private const int SERIAL_RECV_LEN_HINT = 20;//aproximate size of most rx messages
+		private const int SERIAL_RECV_LEN_MAX = 1000;//max size of any rx messages
 
-		private readonly SerialPort serialPort;
+		private int serialPortByteTimeout;
+
+		private readonly BetterSerialPort serialPort;
 		private Thread serThread = null;
 
 		private CancellationTokenSource stopSerThread_Token;
@@ -68,9 +72,10 @@ namespace pscontrol
 		
 
 
-		public SerialPortHandler(SerialPort serialPort)
+		public SerialPortHandler(BetterSerialPort serialPort, int byteTimeout = 1)
 		{
 			this.serialPort = serialPort;
+			serialPortByteTimeout = byteTimeout;
 			toSerThreadQueue = new BlockingCollection<SerialTask>();
 			fromSerThreadQueue = new BlockingCollection<SerialTask>();
 		}
@@ -83,7 +88,7 @@ namespace pscontrol
 			//error, dont stop thread (it already stopped)
 			try
 			{
-				if (serialPort.IsOpen) serialPort.Close();
+				serialPort.Close();
 			}
 			catch
 			{
@@ -114,7 +119,7 @@ namespace pscontrol
 
 		private void SerThread()
 		{
-			while (serialPort.IsOpen)
+			while (!stopSerThread_Token.Token.IsCancellationRequested)
 			{
 				SerialTask task;
 				try
@@ -127,26 +132,23 @@ namespace pscontrol
 				}
 				if (!stopSerThread_Token.Token.IsCancellationRequested)
 				{
-					try
-					{
-						serialPort.Write(task.Send);
-					}
-					catch
+					int bytesWritten = serialPort.Write(task.Send);
+					if (bytesWritten < 0)
 					{
 						break;
 					}
 					if (task.WaitTime > 0)
 					{
-						Stopwatch noAnswerTimeout = new Stopwatch();
-						noAnswerTimeout.Start();
 						task.Recv = "";
-						while ((task.Recv.Length == 0) && (noAnswerTimeout.ElapsedMilliseconds < task.WaitTime))
+						string temp = serialPort.ReadString(SERIAL_RECV_LEN_HINT, (uint)task.WaitTime, 2);
+						if (temp != null)
 						{
-							string temp = SerialPortBlockingRead(serialPort);
-							if (temp == null) break;//serport error ocurred
-							task.Recv += temp;
+							//no serport error ocurred
+							task.Recv = temp;
 						}
-						noAnswerTimeout.Stop();
+						
+
+
 						fromSerThreadQueue.Add(task);
 					}
 				}
@@ -161,60 +163,25 @@ namespace pscontrol
 			Console.WriteLine("[SerThread] exit");
 		}
 
-		/// <summary>
-		/// blocking receive bytes from the serialport
-		/// </summary>
-		/// <param name="port">what port to use</param>
-		/// <returns>null on serialport error, received string otherwise</returns>
-		private static string SerialPortBlockingRead(SerialPort port)
+
+
+
+
+
+		public void Open(string portname, uint baudRate)
 		{
-			var recv = new StringBuilder(SERIAL_RECV_LEN);
 			try
 			{
-				for (int i = 0; i < SERIAL_RECV_LEN; i++)
-				{
-					recv.Append((char)port.ReadChar());
-				}
+				serialPort.Open(portname, baudRate);
 			}
-			catch (TimeoutException)
+			catch (Exception ex)
 			{
-				//this means the receive 'packet' is complete
-			}
-			catch (System.IO.IOException)
-			{
-				//comport got disconnected
-				return null;
-			}
-			catch (InvalidOperationException)
-			{
-				//comport is closed
-				return null;
-			}
-			return recv.ToString();
-		}
-
-
-
-
-
-
-		public void Open(string portname)
-		{
-			serialPort.PortName = portname;
-			try
-			{
-				serialPort.Open();
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				//port is already opened by another application
-				throw ex;
-			}
-			catch (IOException ex)
-			{
+				//port is already opened by another application OR
 				//tried to open a removed port
 				throw ex;
 			}
+			toSerThreadQueue.ClearQueue();
+			fromSerThreadQueue.ClearQueue();
 			StartSerThread();
 		}
 
@@ -226,9 +193,7 @@ namespace pscontrol
 		public void Close()
 		{
 			StopSerThread();
-			if (serialPort.IsOpen) serialPort.Close();	//now empty the queues
-			toSerThreadQueue.ClearQueue();
-			fromSerThreadQueue.ClearQueue();
+			serialPort.Close();
 		}
 
 		public int SendCount
@@ -236,9 +201,14 @@ namespace pscontrol
 			get { return toSerThreadQueue.Count; }
 		}
 
+		public void SendResetCount()
+		{
+			toSerThreadQueue.ClearQueue();
+		}
+
 		public void Send(SerialTask task)
 		{
-			if (serialPort.IsOpen) toSerThreadQueue.Add(task);
+			if (IsOpen) toSerThreadQueue.Add(task);
 		}
 
 		public int RecvCount

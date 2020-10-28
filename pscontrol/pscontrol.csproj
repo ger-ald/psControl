@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BetterSerialPort.cs" />
     <Compile Include="customNumericUpDown.cs">
       <SubType>Component</SubType>
     </Compile>

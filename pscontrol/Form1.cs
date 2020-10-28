@@ -31,6 +31,7 @@ using System.Linq;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using Microsoft.Win32;
 
 namespace pscontrol
 {
@@ -73,6 +74,8 @@ namespace pscontrol
 
 			toolStripStatusLabel1.Text = "";
 			ConnectedChange(false);
+
+			SystemEvents.PowerModeChanged += System_OnPowerChange;
 		}
 
 		private void RefreshDropdown()
@@ -171,6 +174,9 @@ namespace pscontrol
 			{
 				int spV = (int)((psu.SetpointV * 100) + 0.5);
 				int spI = (int)((psu.SetpointI * 1000) + 0.5);
+
+				cbOutEnable.Checked = psu.OutputEnabled;
+
 				//voltage:
 				if (spV >= 0)
 				{
@@ -217,16 +223,11 @@ namespace pscontrol
 			bool connected;
 			try
 			{
-				connected = psu.Connect((cmbbxComList.SelectedItem as SerialPortDevice).Port);
+				connected = psu.Connect(((SerialPortDevice)cmbbxComList.SelectedItem).Port);
 			}
-			catch (UnauthorizedAccessException ex)
+			catch (Exception ex)
 			{
-				//port is already open
-				toolStripStatusLabel1.Text = "Error: " + ex.Message;
-				return;
-			}
-			catch (IOException ex)
-			{
+				//port is already open OR
 				//tried to open a removed port
 				toolStripStatusLabel1.Text = "Error: " + ex.Message;
 				return;
@@ -237,8 +238,6 @@ namespace pscontrol
 				toolStripStatusLabel1.Text = "Error: Couldn't find device";
 				return;
 			}
-			cbOutEnable.Checked = psu.OutputEnabled;
-			UpdateStatusLeds();
 
 			//set prev values to prevent sending if user changed values from 0 before connecting (the reply from the commands above will be used to mirror the setpoint values from the psu in the numupdowns)
 			cmbbxComList.Enabled = false;
@@ -274,6 +273,18 @@ namespace pscontrol
 
 
 
+		private void System_OnPowerChange(object s, PowerModeChangedEventArgs e)
+		{
+			switch (e.Mode)
+			{
+				case PowerModes.Resume:
+					psu.Resync();
+					break;
+				case PowerModes.Suspend:
+					break;
+			}
+		}
+
 		private void Form1_Load(object sender, EventArgs e)
 		{
 			RefreshDropdown();
@@ -286,6 +297,7 @@ namespace pscontrol
 				StopLogging();
 			}
 			psu.Disconnect();
+			SystemEvents.PowerModeChanged -= System_OnPowerChange;
 		}
 
 		private void BtnComRefreshList_Click(object sender, EventArgs e)
@@ -350,14 +362,14 @@ namespace pscontrol
 		{
 			byte index = byte.Parse(((Button)sender).Text.Split(' ')[1]);
 			psu.Recall(index);
-			cbOutEnable.Checked = false;
+			//cbOutEnable.Checked = false;
 		}
 
 		private void btnSave_Click(object sender, EventArgs e)
 		{
 			byte index = byte.Parse(((Button)sender).Text.Split(' ')[1]);
 			psu.Save(index);
-			cbOutEnable.Checked = false;
+			//cbOutEnable.Checked = false;
 		}
 
 		private void lblShowMore_Click(object sender, EventArgs e)

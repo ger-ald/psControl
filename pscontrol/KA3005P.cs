@@ -25,6 +25,7 @@ using System;
 using System.Globalization;
 using System.IO.Ports;
 using System.Threading;
+using Win32SerialPort;
 
 namespace pscontrol
 {
@@ -57,12 +58,16 @@ namespace pscontrol
 		private double currentCurrent = 0.0;
 		private bool currentOutEnabled = false;
 		private int consecutiveEmptyReplies = 0;
+		private bool retreivingSetpoints = false;
 
 
 		/// <summary>
-		/// This event is called when the setpoints are changed by the psu, for example: right after connecting or recalling from psu memory.
+		/// This event is called when the setpoints and 'OutputEnabled' are changed by the psu. for example: right after connecting or recalling from psu memory.
 		/// </summary>
 		public event EventHandler OnSetpointUpdate;
+		/// <summary>
+		/// This event is called when all current psu values (output- status, voltage, current) have been updated. frequency: several times per second when connected.
+		/// </summary>
 		public event EventHandler OnOutputUpdate;
 		public event EventHandler OnSurpriseDisconnect;
 
@@ -144,15 +149,7 @@ namespace pscontrol
 
 		public KA3005P()
 		{
-			SerialPort serialPort1 = new SerialPort
-			{
-				BaudRate = 9600,
-				DataBits = 8,
-				Parity = Parity.None,
-				StopBits = StopBits.One,
-				Handshake = Handshake.None,
-				ReadTimeout = 20
-			};
+			BetterSerialPort serialPort1 = new BetterSerialPort(BetterSerialPort.StopBits.One, BetterSerialPort.Parity.None);
 			serport1 = new SerialPortHandler(serialPort1);
 			serport1.SerialPortBroke += Serport1_SerialPortBroke;
 			SetStatusIndicators(0);
@@ -184,15 +181,18 @@ namespace pscontrol
 				//send new commands if the transmit queue is empty: (avoids creating a large backlog because of differing transfer rates)
 				if (serport1.SendCount == 0)
 				{
-					if (setpointVoltage != prevSetVoltage)
+					if (!retreivingSetpoints)
 					{
-						prevSetVoltage = setpointVoltage;
-						serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
-					}
-					if (setpointCurrent != prevSetCurrent)
-					{
-						prevSetCurrent = setpointCurrent;
-						serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+						if (setpointVoltage != prevSetVoltage)
+						{
+							prevSetVoltage = setpointVoltage;
+							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+						}
+						if (setpointCurrent != prevSetCurrent)
+						{
+							prevSetCurrent = setpointCurrent;
+							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+						}
 					}
 					serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.STATUS, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));
 					serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VOUT, "VOUT1?", SERIAL_RECV_TIMEOUT_KEEP));
@@ -249,12 +249,12 @@ namespace pscontrol
 						case SerialMsgType.IOUT:
 							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out currentCurrent))
 							{
-								//v and i received, so notify eventhandlers: (when we send requests the V is asked first so here we should have received V already)
+								//status, v and i received, so notify eventhandlers: (when we send requests the status and the V are asked first so here we should have received status and V already)
 								OnOutputUpdate?.Invoke(this, EventArgs.Empty);
 							}
 							break;
 
-						//received setpoint v/i output from psu (happens at connect only)
+						//received setpoint v/i output from psu (happens only at connect and resync)
 						case SerialMsgType.VGET:
 							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out tempvalue))
 							{
@@ -267,6 +267,7 @@ namespace pscontrol
 							{
 								this.SetpointI = tempvalue;
 								prevSetCurrent = setpointCurrent;
+								retreivingSetpoints = false;
 								//v and i received, so notify eventhandlers:
 								OnSetpointUpdate?.Invoke(this, EventArgs.Empty);
 							}
@@ -320,11 +321,10 @@ namespace pscontrol
 		/// <returns>true if connected</returns>
 		public bool Connect(string portname)
 		{
-			serport1.Open(portname);
+			serport1.Open(portname, 9600);
 
 			//send one cmd to check if the psu is there
 			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.INITOUTENA, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));//send a status request to see if the psu is present and set the outputenabled state
-			while (serport1.RecvCount == 0) ;
 			SerialPortHandler.SerialTask task;
 			while (!serport1.TryRecv(out task)) ;
 			if (task.Recv.Length != 1)
@@ -334,14 +334,7 @@ namespace pscontrol
 				return false;
 			}
 			SetStatusIndicators((byte)task.Recv[0]);
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VGET, "VSET1?", SERIAL_RECV_TIMEOUT_KEEP));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.IGET, "ISET1?", SERIAL_RECV_TIMEOUT_KEEP));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VOUT, "VOUT1?", SERIAL_RECV_TIMEOUT_KEEP));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.IOUT, "IOUT1?", SERIAL_RECV_TIMEOUT_KEEP));
-
-			//set prev values to prevent sending if user changed values from 0 before connecting (the reply from the commands above will be used to mirror the setpoint values from the psu in the numupdowns)
-			prevSetVoltage = setpointVoltage;
-			prevSetCurrent = setpointCurrent;
+			Resync();
 
 			//enable comms processing:
 			consecutiveEmptyReplies = 0;
@@ -355,7 +348,7 @@ namespace pscontrol
 		/// </summary>
 		public bool IsConnected
 		{
-			get { return ((otherThread != null) && otherThread.IsAlive); }
+			get { return ((otherThread != null) && otherThread.IsAlive && serport1.IsOpen); }
 		}
 
 		/// <summary>
@@ -365,6 +358,14 @@ namespace pscontrol
 		{
 			StopOtherThread();
 			if (serport1.IsOpen) serport1.Close();
+		}
+
+		public void Resync()
+		{
+			retreivingSetpoints = true;
+			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.STATUS, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));
+			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VGET, "VSET1?", SERIAL_RECV_TIMEOUT_KEEP));
+			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.IGET, "ISET1?", SERIAL_RECV_TIMEOUT_KEEP));
 		}
 
 		/// <summary>
@@ -379,8 +380,7 @@ namespace pscontrol
 				throw new IndexOutOfRangeException();
 			}
 			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.DONTCARE, "RCL" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VGET, "VSET1?", SERIAL_RECV_TIMEOUT_KEEP));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.IGET, "ISET1?", SERIAL_RECV_TIMEOUT_KEEP));
+			Resync();
 			//recall always turns off the output
 		}
 
