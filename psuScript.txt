@@ -1,0 +1,63 @@
+out0 //<<safety
+wait 1
+
+//a line starting with anything other than a known command will be regarded as comment
+//whitespace (spaces or tabs) in front of a command will be ignored and the cmd executed
+//a command and its parameters need to be separated with spaces or tabs
+
+//all lines in the file will be evaluated and commands executed from the first to the last
+//when evaluation comes to the last line the script is stopped
+
+
+
+//known commands:
+
+//set voltage to 12.34V
+v 12.34
+
+//set current to 1.234A
+i 1.234
+
+//set voltage to 1.00A
+v 1
+
+//increment voltage by 1V
+v++
+
+//increment voltage by 0.42V
+v++ 0.42
+
+//decrement works too, and also for current
+i-- 0.1
+
+//you can also set current and voltage with one command (0.2V 0.1A)
+vi 0.20 0.100
+
+//enable output
+out1
+
+//delay 2 seconds (smallest delay is 1 second)
+wait 2
+
+//disable output
+out0
+
+
+//start a loop (loop 5 times. indentation not required)
+loop 5
+	v++
+	wait 1
+pool
+
+
+//loops can also be nested
+loop 5
+	loop 10
+		v++ 0.5
+		wait 1
+	pool
+	loop 10
+		v-- 0.5
+		wait 1
+	pool
+pool

@@ -63,8 +63,8 @@ namespace pscontrol
 			}
 		}
 
-		private BlockingCollection<SerialTask> toSerThreadQueue;
-		private BlockingCollection<SerialTask> fromSerThreadQueue;
+		private readonly BlockingCollection<SerialTask> toSerThreadQueue;
+		private readonly BlockingCollection<SerialTask> fromSerThreadQueue;
 
 		public event EventHandler SerialPortBroke;
 
@@ -72,7 +72,7 @@ namespace pscontrol
 		
 
 
-		public SerialPortHandler(BetterSerialPort serialPort, int byteTimeout = 1)
+		public SerialPortHandler(BetterSerialPort serialPort, int byteTimeout = 2)
 		{
 			this.serialPort = serialPort;
 			serialPortByteTimeout = byteTimeout;
@@ -140,7 +140,7 @@ namespace pscontrol
 					if (task.WaitTime > 0)
 					{
 						task.Recv = "";
-						string temp = serialPort.ReadString(SERIAL_RECV_LEN_HINT, (uint)task.WaitTime, 2);
+						string temp = serialPort.ReadString(SERIAL_RECV_LEN_HINT, (uint)task.WaitTime, (uint)serialPortByteTimeout);
 						if (temp != null)
 						{
 							//no serport error ocurred

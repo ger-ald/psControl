@@ -10,6 +10,8 @@ namespace Win32SerialPort
 {
 	class BetterSerialPort : IDisposable
 	{
+		private const long INVALID_HANDLE_VALUE = -1;
+
 		#region Enum
 		public enum StopBits
 		{
@@ -42,7 +44,7 @@ namespace Win32SerialPort
 		/// <summary>
 		/// The system handle to the serial port connection ('file' handle).
 		/// </summary>
-		private IntPtr pHandle = IntPtr.Zero;
+		private IntPtr pHandle = (IntPtr)INVALID_HANDLE_VALUE;
 
 		/// <summary>
 		/// The parity scheme to be used.
@@ -100,13 +102,14 @@ namespace Win32SerialPort
 		public void Open(string portName, uint baudRate)
 		{
 			if (portName.StartsWith(@"\\"))
-				throw new ArgumentException("portName can't start with \\\\");
-			this.sPortName = @"\\.\" + portName;
+				this.sPortName = portName;
+			else
+				this.sPortName = @"\\.\" + portName;
 			this.iBaudRate = baudRate;
 
 			pHandle = CreateFile(this.sPortName, FileAccess.ReadWrite, FileShare.None,
 				IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
-			if (pHandle == IntPtr.Zero)
+			if (pHandle == (IntPtr)INVALID_HANDLE_VALUE)
 			{
 				string lastError = GetLastErrorAsString();
 				throw new Exception("BetterSerialPort.Open(); " + lastError);
@@ -118,7 +121,7 @@ namespace Win32SerialPort
 
 		public bool IsOpen
 		{
-			get { return (pHandle != IntPtr.Zero); }
+			get { return (pHandle != (IntPtr)INVALID_HANDLE_VALUE); }
 		}
 
 		#region Write
@@ -236,10 +239,10 @@ namespace Win32SerialPort
 
 		public void Dispose()
 		{
-			if (pHandle != IntPtr.Zero)
+			if (pHandle != (IntPtr)INVALID_HANDLE_VALUE)
 			{
 				CloseHandle(pHandle);
-				pHandle = IntPtr.Zero;
+				pHandle = (IntPtr)INVALID_HANDLE_VALUE;
 			}
 		}
 
@@ -348,7 +351,7 @@ namespace Win32SerialPort
 		/// </summary>
 		private void FailIfNotConnected()
 		{
-			if (pHandle == IntPtr.Zero)
+			if (pHandle == (IntPtr)INVALID_HANDLE_VALUE)
 				throw new InvalidOperationException("You must be connected to the serial port before performing this operation.");
 		}
 

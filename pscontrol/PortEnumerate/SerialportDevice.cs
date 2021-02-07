@@ -33,6 +33,7 @@ namespace Win32PortEnumerate
 		public string FriendlyName { get; set; }
 		public string BusReportedDeviceDescription { get; set; }
 		public string DeviceID { get; set; }
+		//public string DevicePath { get; set; }
 
 
 		public override string ToString()

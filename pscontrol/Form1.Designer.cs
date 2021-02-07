@@ -91,12 +91,16 @@ namespace pscontrol
 			this.btnSave1 = new System.Windows.Forms.Button();
 			this.btnLoad1 = new System.Windows.Forms.Button();
 			this.gbRecordPlayback = new System.Windows.Forms.GroupBox();
+			this.btnStopScript = new System.Windows.Forms.Button();
+			this.lblScriptName = new System.Windows.Forms.Label();
+			this.btnBrowseScript = new System.Windows.Forms.Button();
+			this.btnStartPauseScript = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this.cnudLogIntervalSeconds = new pscontrol.CustomNumericUpDown();
 			this.cnudLogIntervalMinutes = new pscontrol.CustomNumericUpDown();
 			this.btnStartStopLog = new System.Windows.Forms.Button();
 			this.lblShowMore = new System.Windows.Forms.Label();
-			this.ofdLogToFile = new System.Windows.Forms.OpenFileDialog();
+			this.ofdLogAndScript = new System.Windows.Forms.OpenFileDialog();
 			this.statusStrip1.SuspendLayout();
 			this.gbPsuSetpoints.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.cnudVoltSetpoint1)).BeginInit();
@@ -176,7 +180,7 @@ namespace pscontrol
 			// cbOutEnable
 			// 
 			this.cbOutEnable.AutoSize = true;
-			this.cbOutEnable.Location = new System.Drawing.Point(158, 58);
+			this.cbOutEnable.Location = new System.Drawing.Point(366, 58);
 			this.cbOutEnable.Name = "cbOutEnable";
 			this.cbOutEnable.Size = new System.Drawing.Size(91, 17);
 			this.cbOutEnable.TabIndex = 10;
@@ -262,7 +266,7 @@ namespace pscontrol
 			// cbLockInputs
 			// 
 			this.cbLockInputs.AutoSize = true;
-			this.cbLockInputs.Location = new System.Drawing.Point(158, 35);
+			this.cbLockInputs.Location = new System.Drawing.Point(366, 35);
 			this.cbLockInputs.Name = "cbLockInputs";
 			this.cbLockInputs.Size = new System.Drawing.Size(46, 17);
 			this.cbLockInputs.TabIndex = 11;
@@ -280,7 +284,7 @@ namespace pscontrol
 			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint2);
 			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint3);
 			this.gbPsuSetpoints.Controls.Add(this.cnudAmpSetpoint4);
-			this.gbPsuSetpoints.Location = new System.Drawing.Point(5, 1);
+			this.gbPsuSetpoints.Location = new System.Drawing.Point(213, 1);
 			this.gbPsuSetpoints.Name = "gbPsuSetpoints";
 			this.gbPsuSetpoints.Size = new System.Drawing.Size(160, 100);
 			this.gbPsuSetpoints.TabIndex = 1;
@@ -306,7 +310,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudVoltSetpoint1.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
+			this.cnudVoltSetpoint1.ValueChanged += new System.EventHandler(this.cnudVoltSetpoint_ValueChangeds);
 			// 
 			// cnudVoltSetpoint2
 			// 
@@ -326,7 +330,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudVoltSetpoint2.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
+			this.cnudVoltSetpoint2.ValueChanged += new System.EventHandler(this.cnudVoltSetpoint_ValueChangeds);
 			// 
 			// cnudVoltSetpoint3
 			// 
@@ -346,7 +350,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudVoltSetpoint3.ValueChanged += new System.EventHandler(this.CnudVoltSetpoint_ValueChangeds);
+			this.cnudVoltSetpoint3.ValueChanged += new System.EventHandler(this.cnudVoltSetpoint_ValueChangeds);
 			// 
 			// cnudAmpSetpoint1
 			// 
@@ -366,7 +370,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudAmpSetpoint1.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
+			this.cnudAmpSetpoint1.ValueChanged += new System.EventHandler(this.cnudAmpSetpoint_ValueChangeds);
 			// 
 			// cnudAmpSetpoint2
 			// 
@@ -386,7 +390,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudAmpSetpoint2.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
+			this.cnudAmpSetpoint2.ValueChanged += new System.EventHandler(this.cnudAmpSetpoint_ValueChangeds);
 			// 
 			// cnudAmpSetpoint3
 			// 
@@ -406,7 +410,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudAmpSetpoint3.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
+			this.cnudAmpSetpoint3.ValueChanged += new System.EventHandler(this.cnudAmpSetpoint_ValueChangeds);
 			// 
 			// cnudAmpSetpoint4
 			// 
@@ -426,7 +430,7 @@ namespace pscontrol
             0,
             0,
             0});
-			this.cnudAmpSetpoint4.ValueChanged += new System.EventHandler(this.CnudAmpSetpoint_ValueChangeds);
+			this.cnudAmpSetpoint4.ValueChanged += new System.EventHandler(this.cnudAmpSetpoint_ValueChangeds);
 			// 
 			// tmrSecondTimer
 			// 
@@ -449,7 +453,7 @@ namespace pscontrol
 			this.gbCommsSetup.Controls.Add(this.cmbbxComList);
 			this.gbCommsSetup.Controls.Add(this.btnComRefresh);
 			this.gbCommsSetup.Controls.Add(this.btnComConnect);
-			this.gbCommsSetup.Location = new System.Drawing.Point(5, 107);
+			this.gbCommsSetup.Location = new System.Drawing.Point(213, 107);
 			this.gbCommsSetup.Name = "gbCommsSetup";
 			this.gbCommsSetup.Size = new System.Drawing.Size(261, 59);
 			this.gbCommsSetup.TabIndex = 0;
@@ -465,7 +469,7 @@ namespace pscontrol
 			this.gbPsuOutputs.Controls.Add(this.lblOutWatt);
 			this.gbPsuOutputs.Controls.Add(this.lblOutVolt);
 			this.gbPsuOutputs.Controls.Add(this.lblOutAmp);
-			this.gbPsuOutputs.Location = new System.Drawing.Point(272, 1);
+			this.gbPsuOutputs.Location = new System.Drawing.Point(5, 1);
 			this.gbPsuOutputs.Name = "gbPsuOutputs";
 			this.gbPsuOutputs.Size = new System.Drawing.Size(202, 165);
 			this.gbPsuOutputs.TabIndex = 2;
@@ -593,6 +597,10 @@ namespace pscontrol
 			// 
 			// gbRecordPlayback
 			// 
+			this.gbRecordPlayback.Controls.Add(this.btnStopScript);
+			this.gbRecordPlayback.Controls.Add(this.lblScriptName);
+			this.gbRecordPlayback.Controls.Add(this.btnBrowseScript);
+			this.gbRecordPlayback.Controls.Add(this.btnStartPauseScript);
 			this.gbRecordPlayback.Controls.Add(this.label1);
 			this.gbRecordPlayback.Controls.Add(this.cnudLogIntervalSeconds);
 			this.gbRecordPlayback.Controls.Add(this.cnudLogIntervalMinutes);
@@ -603,6 +611,48 @@ namespace pscontrol
 			this.gbRecordPlayback.TabIndex = 12;
 			this.gbRecordPlayback.TabStop = false;
 			this.gbRecordPlayback.Text = "Record/Playback";
+			// 
+			// btnStopScript
+			// 
+			this.btnStopScript.Image = global::pscontrol.Properties.Resources.StopIcon;
+			this.btnStopScript.Location = new System.Drawing.Point(38, 114);
+			this.btnStopScript.Name = "btnStopScript";
+			this.btnStopScript.Size = new System.Drawing.Size(26, 24);
+			this.btnStopScript.TabIndex = 9;
+			this.btnStopScript.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnStopScript.UseVisualStyleBackColor = true;
+			this.btnStopScript.Click += new System.EventHandler(this.btnStopScript_Click);
+			// 
+			// lblScriptName
+			// 
+			this.lblScriptName.AutoSize = true;
+			this.lblScriptName.Location = new System.Drawing.Point(6, 141);
+			this.lblScriptName.Name = "lblScriptName";
+			this.lblScriptName.Size = new System.Drawing.Size(82, 13);
+			this.lblScriptName.TabIndex = 8;
+			this.lblScriptName.Text = "no script loaded";
+			// 
+			// btnBrowseScript
+			// 
+			this.btnBrowseScript.Image = global::pscontrol.Properties.Resources.BrowseIcon;
+			this.btnBrowseScript.Location = new System.Drawing.Point(70, 114);
+			this.btnBrowseScript.Name = "btnBrowseScript";
+			this.btnBrowseScript.Size = new System.Drawing.Size(26, 24);
+			this.btnBrowseScript.TabIndex = 7;
+			this.btnBrowseScript.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnBrowseScript.UseVisualStyleBackColor = true;
+			this.btnBrowseScript.Click += new System.EventHandler(this.btnBrowseScript_Click);
+			// 
+			// btnStartPauseScript
+			// 
+			this.btnStartPauseScript.Image = global::pscontrol.Properties.Resources.PlayIcon;
+			this.btnStartPauseScript.Location = new System.Drawing.Point(6, 114);
+			this.btnStartPauseScript.Name = "btnStartPauseScript";
+			this.btnStartPauseScript.Size = new System.Drawing.Size(26, 24);
+			this.btnStartPauseScript.TabIndex = 6;
+			this.btnStartPauseScript.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnStartPauseScript.UseVisualStyleBackColor = true;
+			this.btnStartPauseScript.Click += new System.EventHandler(this.btnStartPauseScript_Click);
 			// 
 			// label1
 			// 
@@ -651,9 +701,9 @@ namespace pscontrol
 			// 
 			// btnStartStopLog
 			// 
-			this.btnStartStopLog.Location = new System.Drawing.Point(6, 20);
+			this.btnStartStopLog.Location = new System.Drawing.Point(6, 19);
 			this.btnStartStopLog.Name = "btnStartStopLog";
-			this.btnStartStopLog.Size = new System.Drawing.Size(75, 23);
+			this.btnStartStopLog.Size = new System.Drawing.Size(90, 24);
 			this.btnStartStopLog.TabIndex = 1;
 			this.btnStartStopLog.Text = "Start Log";
 			this.btnStartStopLog.UseVisualStyleBackColor = true;
@@ -672,10 +722,6 @@ namespace pscontrol
 			this.lblShowMore.Text = "More>>";
 			this.lblShowMore.Click += new System.EventHandler(this.lblShowMore_Click);
 			// 
-			// ofdLogToFile
-			// 
-			this.ofdLogToFile.CheckFileExists = false;
-			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -691,7 +737,7 @@ namespace pscontrol
 			this.Controls.Add(this.gbPsuOutputs);
 			this.Controls.Add(this.gbMemoryButtons);
 			this.MaximumSize = new System.Drawing.Size(738, 231);
-			this.MinimumSize = new System.Drawing.Size(287, 60);
+			this.MinimumSize = new System.Drawing.Size(229, 60);
 			this.Name = "Form1";
 			this.ShowIcon = false;
 			this.Text = "psControl   v";
@@ -765,10 +811,14 @@ namespace pscontrol
 		private System.Windows.Forms.GroupBox gbRecordPlayback;
 		private System.Windows.Forms.Button btnStartStopLog;
 		private System.Windows.Forms.Label lblShowMore;
-		private System.Windows.Forms.OpenFileDialog ofdLogToFile;
+		private System.Windows.Forms.OpenFileDialog ofdLogAndScript;
 		private CustomNumericUpDown cnudLogIntervalSeconds;
 		private CustomNumericUpDown cnudLogIntervalMinutes;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Button btnStartPauseScript;
+		private System.Windows.Forms.Button btnBrowseScript;
+		private System.Windows.Forms.Label lblScriptName;
+		private System.Windows.Forms.Button btnStopScript;
 	}
 }
 

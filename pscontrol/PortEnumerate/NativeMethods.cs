@@ -225,12 +225,15 @@ namespace Win32PortEnumerate
 			SPDRP_MAXIMUM_PROPERTY = 0x00000025  // Upper bound on ordinals                
 		}
 
+
+
+
 		[StructLayout(LayoutKind.Sequential)]
-		internal struct DevInfoData
+		internal struct SP_DEVINFO_DATA
 		{
-			public uint CbSize;
+			public UInt32 CbSize;
 			public Guid ClassGuid;
-			public uint DevInst;
+			public UInt32 DevInst;
 			public UIntPtr Reserved;
 		}
 
@@ -240,6 +243,25 @@ namespace Win32PortEnumerate
 			public Guid Fmtid;
 			public UInt32 Pid;
 		}
+
+
+		[StructLayout(LayoutKind.Sequential)]
+		internal struct SP_DEVICE_INTERFACE_DATA
+		{
+			public UInt32 CbSize;
+			public Guid InterfaceClassGuid;
+			public Int32 Flags;
+			private UIntPtr Reserved;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]
+		internal struct SP_DEVICE_INTERFACE_DETAIL_DATA
+		{
+			public UInt32 CbSize;
+			public string DevicePath;
+		}
+
+
 
 
 		[DllImport("setupapi.dll", SetLastError = true)]
@@ -267,13 +289,32 @@ namespace Win32PortEnumerate
 		internal static extern bool SetupDiEnumDeviceInfo(
 			IntPtr deviceInfoSet,
 			uint memberIndex,
-			ref DevInfoData deviceInfoData
+			ref SP_DEVINFO_DATA deviceInfoData
+		);
+
+		[DllImport(@"SetupAPI.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		internal static extern Boolean SetupDiEnumDeviceInterfaces(
+			IntPtr deviceInfoSet,
+			IntPtr deviceInfoData,//ref SP_DEVINFO_DATA
+			ref Guid interfaceClassGuid,
+			UInt32 memberIndex,
+			ref SP_DEVICE_INTERFACE_DATA deviceInterfaceData
+		);
+
+		[DllImport(@"SetupAPI.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		internal static extern Boolean SetupDiGetDeviceInterfaceDetail(
+			IntPtr deviceInfoSet,
+			SP_DEVICE_INTERFACE_DATA deviceInterfaceData,
+			IntPtr deviceInterfaceDetailData,
+			uint deviceInterfaceDetailDataSize,
+			out uint requiredSize,
+			SP_DEVINFO_DATA deviceInfoData /* should be 'ref SP_DEVINFO_DATA deviceInfoData' but is optional (==null if not used but a ref cant be null) */
 		);
 
 		[DllImport("SetupAPI.dll", SetLastError = true)]
 		internal static extern IntPtr SetupDiOpenDevRegKey(
 			IntPtr deviceInfoSet,
-			ref DevInfoData deviceInfoData,
+			ref SP_DEVINFO_DATA deviceInfoData,
 			DeviceInfoPropertyScope scope,
 			uint hwProfile,
 			DeviceInfoRegistryKeyType keyType,
@@ -283,7 +324,7 @@ namespace Win32PortEnumerate
 		[DllImport("SetupAPI.dll", SetLastError = true)]
 		internal static extern bool SetupDiGetDeviceRegistryProperty(
 			IntPtr deviceInfoSet,
-			ref DevInfoData deviceInfoData,
+			ref SP_DEVINFO_DATA deviceInfoData,
 			DeviceInfoRegistryProperty property,
 			out uint propertyRegDataType,
 			StringBuilder propertyBuffer,
@@ -324,13 +365,13 @@ namespace Win32PortEnumerate
 			string deviceInstanceId,
 			IntPtr hwndParent,
 			int openFlags,
-			ref DevInfoData deviceInfoData
+			ref SP_DEVINFO_DATA deviceInfoData
 		);
 
 		[DllImport("setupapi.dll", SetLastError = true)]
 		internal static extern bool SetupDiGetDevicePropertyW(
 			IntPtr deviceInfoSet,
-			[In] ref DevInfoData deviceInfoData,
+			[In] ref SP_DEVINFO_DATA deviceInfoData,
 			[In] ref DEVPROPKEY propertyKey,
 			[Out] out UInt32 propertyType,
 			byte[] propertyBuffer,

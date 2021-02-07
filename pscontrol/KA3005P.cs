@@ -50,13 +50,14 @@ namespace pscontrol
 
 		private readonly SerialPortHandler serport1;
 
+		private bool setpointOutputEnable = false;
 		private int setpointVoltage = -1;// = volt* 100
 		private int setpointCurrent = -1;// = amp *1000
+		private bool prevSetOutputEnable = false;
 		private int prevSetVoltage = -1;// = volt* 100
 		private int prevSetCurrent = -1;// = amp *1000
 		private double currentVoltage = 0.0;
 		private double currentCurrent = 0.0;
-		private bool currentOutEnabled = false;
 		private int consecutiveEmptyReplies = 0;
 		private bool retreivingSetpoints = false;
 
@@ -73,6 +74,22 @@ namespace pscontrol
 
 		private Thread otherThread = null;
 		private CancellationTokenSource stopOtherThread_CancelToken;
+
+		/// <summary>
+		/// enable or disable psu output.
+		/// </summary>
+		public bool SetpointOutputEnabled
+		{
+			get
+			{
+				return setpointOutputEnable;
+			}
+
+			set
+			{
+				setpointOutputEnable = value;
+			}
+		}
 
 		/// <summary>
 		/// Voltage setpoint of the psu.
@@ -107,6 +124,11 @@ namespace pscontrol
 		}
 
 		/// <summary>
+		/// psu reported output enabled state.
+		/// </summary>
+		public bool OutputEnabled { get; private set; } = false;
+
+		/// <summary>
 		/// Actual output voltage reported by the psu.
 		/// </summary>
 		public double OutputV
@@ -127,22 +149,7 @@ namespace pscontrol
 				return currentCurrent;
 			}
 		}
-	
-		/// <summary>
-		/// Set: enable or disable psu output, Get: psu reported output state.
-		/// </summary>
-		public bool OutputEnabled
-		{
-			get
-			{
-				return currentOutEnabled;
-			}
 
-			set
-			{
-				serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.DONTCARE, "OUT" + (value ? "1" : "0"), SERIAL_RECV_TIMEOUT_TOSS));
-			}
-		}
 		public bool IsInCVmode { get; private set; } = false;
 		public bool IsInCCmode { get; private set; } = false;
 
@@ -183,6 +190,11 @@ namespace pscontrol
 				{
 					if (!retreivingSetpoints)
 					{
+						if (setpointOutputEnable != prevSetOutputEnable)
+						{
+							prevSetOutputEnable = setpointOutputEnable;
+							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.DONTCARE, "OUT" + (setpointOutputEnable ? "1" : "0"), SERIAL_RECV_TIMEOUT_TOSS));
+						}
 						if (setpointVoltage != prevSetVoltage)
 						{
 							prevSetVoltage = setpointVoltage;
@@ -306,9 +318,9 @@ namespace pscontrol
 
 		private void SetStatusIndicators(byte status)
 		{
-			currentOutEnabled = (status & 0x40) != 0;
-			IsInCVmode = ((status & 0x01) != 0) && currentOutEnabled;
-			IsInCCmode = (!IsInCVmode) && currentOutEnabled;
+			OutputEnabled = (status & 0x40) != 0;
+			IsInCVmode = ((status & 0x01) != 0) && OutputEnabled;
+			IsInCCmode = (!IsInCVmode) && OutputEnabled;
 		}
 
 
@@ -324,9 +336,14 @@ namespace pscontrol
 			serport1.Open(portname, 9600);
 
 			//send one cmd to check if the psu is there
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.INITOUTENA, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));//send a status request to see if the psu is present and set the outputenabled state
-			SerialPortHandler.SerialTask task;
-			while (!serport1.TryRecv(out task)) ;
+			SerialPortHandler.SerialTask task = null;
+			for (int retries = 0; retries < 2; retries++)
+			{
+				serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.INITOUTENA, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));//send a status request to see if the psu is present and set the outputenabled state
+				while (!serport1.TryRecv(out task)) ;
+				if (task.Recv.Length == 1)
+					break;
+			}
 			if (task.Recv.Length != 1)
 			{
 				//we didnt get the expected single byte back

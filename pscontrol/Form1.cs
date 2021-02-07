@@ -38,11 +38,21 @@ namespace pscontrol
 	public partial class Form1 : Form
 	{
 		private KA3005P psu;
+
+		//logging vars:
 		private bool logging = false;
 		private string loggingFileName = "";
 		private StreamWriter logFileStream;
 		private int loggingInterval = 1;
 		private int loggingIntervalCnt = 0;
+
+		//scripting vars:
+		private bool scripting = false;
+		private string scriptingFileName = "";
+		private List<string> scriptLines = null;
+		private int scriptExeLine = 0;
+		private int scriptExeDelay = 0;
+		private List<int> scriptStack = null;
 
 		private int updatesCounter = 0;
 		private int form1WidthWhenShowingLess = 0;
@@ -65,6 +75,8 @@ namespace pscontrol
 
 			cnudLogIntervalSeconds.SetOverflow(cnudLogIntervalMinutes);
 
+			btnStartPauseScript.Enabled = false;
+			btnStopScript.Enabled = false;
 			form1WidthWhenShowingLess = this.Width;
 
 			psu = new KA3005P();
@@ -81,7 +93,7 @@ namespace pscontrol
 		private void RefreshDropdown()
 		{
 			List<SerialPortDevice> devices = new List<SerialPortDevice>();
-			devices = SerialPortEnumerator.Enumerate().ToList();
+			devices = SerialPortEnumerator.Enumerate();
 			devices.Sort((x, y) => NativeMethods.StrCmpLogicalW(x.Port, y.Port));
 
 			string prevSelection = cmbbxComList.Text;
@@ -139,15 +151,19 @@ namespace pscontrol
 			}
 		}*/
 
-		private void UpdateStatusLeds()
+		private void UpdateDispStatusLeds()
 		{
 			cbIndicatorOutEnabled.CheckState = psu.OutputEnabled ? CheckState.Indeterminate : CheckState.Unchecked;
+			cbIndicatorOutEnabled.BackColor = psu.OutputEnabled ? Color.Red : SystemColors.Control;
 			cbIndicatorCV.CheckState = psu.IsInCVmode ? CheckState.Indeterminate : CheckState.Unchecked;
 			cbIndicatorCC.CheckState = psu.IsInCCmode ? CheckState.Indeterminate : CheckState.Unchecked;
 		}
 
-		private void UpdateWattOhm(double voltage, double current)
+		private void UpdateDispOutput(double voltage, double current)
 		{
+			lblOutVolt.Text = voltage.ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + "  V";//can go up to 999.99
+			lblOutAmp.Text = current.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " A";//can go up to 99.999
+
 			double power = voltage * current;
 			double resistance = voltage / current;
 			lblOutWatt.Text = power.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " W";//can go up to 999.999
@@ -157,6 +173,30 @@ namespace pscontrol
 				lblOutOhm.Text = resistance.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " Ω";//can go up to 999.999
 			else
 				lblOutOhm.Text = (resistance / 1000.0).ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + " kΩ";//can go up to 999.999
+		}
+
+		private void UpdateDispSetpoint(double voltage, double current)
+		{
+			int spV = (int)((voltage * 100) + 0.5);
+			int spI = (int)((current * 1000) + 0.5);
+
+			//voltage:
+			if (spV >= 0)
+			{
+				cnudVoltSetpoint1.ValueNoOnValueChanged = (spV / 100);
+				cnudVoltSetpoint2.ValueNoOnValueChanged = (decimal)(spV / 10) % 10;
+				cnudVoltSetpoint3.ValueNoOnValueChanged = (decimal)spV % 10;
+			}
+			//current:
+			if (spI >= 0)
+			{
+				cnudAmpSetpoint1.ValueNoOnValueChanged = (spI / 1000);
+				cnudAmpSetpoint2.ValueNoOnValueChanged = (decimal)(spI / 100) % 10;
+				cnudAmpSetpoint4.ValueNoOnValueChanged = (decimal)(spI / 10) % 10;
+				cnudAmpSetpoint3.ValueNoOnValueChanged = (decimal)spI % 10;
+			}
+
+			lblSetpointWatt.Text = (voltage * current).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 		}
 
 		private void psu_OnSurpriseDisconnect(object sender, EventArgs e)
@@ -172,28 +212,8 @@ namespace pscontrol
 		{
 			cnudVoltSetpoint1.BeginInvoke((MethodInvoker)delegate ()
 			{
-				int spV = (int)((psu.SetpointV * 100) + 0.5);
-				int spI = (int)((psu.SetpointI * 1000) + 0.5);
-
+				UpdateDispSetpoint(psu.SetpointV, psu.SetpointI);
 				cbOutEnable.Checked = psu.OutputEnabled;
-
-				//voltage:
-				if (spV >= 0)
-				{
-					cnudVoltSetpoint1.ValueNoOnValueChanged = (spV / 100);
-					cnudVoltSetpoint2.ValueNoOnValueChanged = (decimal)(spV / 10) % 10;
-					cnudVoltSetpoint3.ValueNoOnValueChanged = (decimal)spV % 10;
-				}
-				//current:
-				if (spI >= 0)
-				{
-					cnudAmpSetpoint1.ValueNoOnValueChanged = (spI / 1000);
-					cnudAmpSetpoint2.ValueNoOnValueChanged = (decimal)(spI / 100) % 10;
-					cnudAmpSetpoint4.ValueNoOnValueChanged = (decimal)(spI / 10) % 10;
-					cnudAmpSetpoint3.ValueNoOnValueChanged = (decimal)spI % 10;
-				}
-
-				lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 			});
 		}
 
@@ -201,10 +221,8 @@ namespace pscontrol
 		{
 			lblOutVolt.BeginInvoke((MethodInvoker)delegate ()
 			{
-				UpdateStatusLeds();
-				lblOutVolt.Text = psu.OutputV.ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + "  V";//can go up to 999.99
-				lblOutAmp.Text = psu.OutputI.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " A";//can go up to 99.999
-				UpdateWattOhm(psu.OutputV, psu.OutputI);
+				UpdateDispStatusLeds();
+				UpdateDispOutput(psu.OutputV, psu.OutputI);
 				updatesCounter++;
 
 				if (logging && (loggingInterval == 0))
@@ -221,6 +239,11 @@ namespace pscontrol
 		private void StartComms()
 		{
 			bool connected;
+			if (cmbbxComList.SelectedItem == null)
+			{
+				toolStripStatusLabel1.Text = "Error: Port not found";
+				return;
+			}
 			try
 			{
 				connected = psu.Connect(((SerialPortDevice)cmbbxComList.SelectedItem).Port);
@@ -254,6 +277,10 @@ namespace pscontrol
 
 		private void StopComms()
 		{
+			if (scripting)
+			{
+				StopScripting();
+			}
 			if (logging)
 			{
 				StopLogging();
@@ -281,6 +308,7 @@ namespace pscontrol
 					psu.Resync();
 					break;
 				case PowerModes.Suspend:
+					PauseScripting();
 					break;
 			}
 		}
@@ -318,14 +346,14 @@ namespace pscontrol
 			}
 		}
 
-		private void CnudVoltSetpoint_ValueChangeds(object sender, EventArgs e)
+		private void cnudVoltSetpoint_ValueChangeds(object sender, EventArgs e)
 		{
 			double voltage = (double)cnudVoltSetpoint1.Value + (double)cnudVoltSetpoint2.Value / 10 + (double)cnudVoltSetpoint3.Value / 100;
 			psu.SetpointV = voltage;
 			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
 		}
 
-		private void CnudAmpSetpoint_ValueChangeds(object sender, EventArgs e)
+		private void cnudAmpSetpoint_ValueChangeds(object sender, EventArgs e)
 		{
 			double current = (double)cnudAmpSetpoint1.Value + (double)cnudAmpSetpoint2.Value / 10 + (double)cnudAmpSetpoint4.Value / 100 + (double)cnudAmpSetpoint3.Value / 1000;
 			psu.SetpointI = current;
@@ -334,7 +362,7 @@ namespace pscontrol
 
 		private void CbOutEnable_CheckedChanged(object sender, EventArgs e)
 		{
-			psu.OutputEnabled = cbOutEnable.Checked;
+			psu.SetpointOutputEnabled = cbOutEnable.Checked;
 		}
 
 		private void CbLockInputs_CheckedChanged(object sender, EventArgs e)
@@ -342,27 +370,10 @@ namespace pscontrol
 			EnableInputs((!cbLockInputs.Checked) && psu.IsConnected);
 		}
 
-		private void TmrSecondTimer_Tick(object sender, EventArgs e)
-		{
-			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrSecondTimer.Interval / 1000.0)).ToString("#0", new CultureInfo("en-US")).PadLeft(2) + " updates/sec";
-			updatesCounter = 0;
-
-			if (logging && (loggingInterval > 0))
-			{
-				loggingIntervalCnt++;
-				if (loggingIntervalCnt >= loggingInterval)
-				{
-					loggingIntervalCnt = 0;
-					WriteLogLine();
-				}
-			}
-		}
-
 		private void btnLoad_Click(object sender, EventArgs e)
 		{
 			byte index = byte.Parse(((Button)sender).Text.Split(' ')[1]);
 			psu.Recall(index);
-			//cbOutEnable.Checked = false;
 		}
 
 		private void btnSave_Click(object sender, EventArgs e)
@@ -382,17 +393,40 @@ namespace pscontrol
 			lblShowMore.Text = (this.Width < this.MaximumSize.Width)? "More>>" : "Less<<";
 		}
 
+		private void TmrSecondTimer_Tick(object sender, EventArgs e)
+		{
+			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrSecondTimer.Interval / 1000.0)).ToString("#0", new CultureInfo("en-US")).PadLeft(2) + " updates/sec";
+			updatesCounter = 0;
+
+			if (scripting)
+			{
+				ExecScript();
+			}
+			if (logging && (loggingInterval > 0))
+			{
+				loggingIntervalCnt++;
+				if (loggingIntervalCnt >= loggingInterval)
+				{
+					loggingIntervalCnt = 0;
+					WriteLogLine();
+				}
+			}
+		}
+
+
+
 		private void StartLogging()
 		{
-			ofdLogToFile.Title = "Log to file";
-			ofdLogToFile.FileName = "psuLog_" + DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".csv";
+			ofdLogAndScript.Title = "Log to file";
+			ofdLogAndScript.FileName = "psuLog_" + DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss") + ".csv";
+			ofdLogAndScript.CheckFileExists = false;
 
 			//ShowDialog() is blocking but thats ok
-			DialogResult res = ofdLogToFile.ShowDialog();
+			DialogResult res = ofdLogAndScript.ShowDialog();
 			if (res == DialogResult.OK)
 			{
 				btnStartStopLog.Text = "Stop log";
-				loggingFileName = ofdLogToFile.FileName;
+				loggingFileName = ofdLogAndScript.FileName;
 				try
 				{
 					FileStream logFile = new FileStream(loggingFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
@@ -446,6 +480,322 @@ namespace pscontrol
 		private void cnudLogIntervals_ValueChanged(object sender, EventArgs e)
 		{
 			loggingInterval = ((int)cnudLogIntervalMinutes.Value * 60) + (int)cnudLogIntervalSeconds.Value;
+		}
+
+		private void StartResumeScripting()
+		{
+			if (scriptStack != null)
+			{
+				//resume:
+				scripting = true;
+				btnStartPauseScript.Image = Properties.Resources.PauseIcon;
+				toolStripStatusLabel1.Text = "Script is running!";
+			}
+			else
+			{
+				//start:
+				try
+				{
+					scriptLines = new List<string>();
+					using (var fileStream = new FileStream(scriptingFileName, FileMode.Open, FileAccess.Read, FileShare.None))
+					using (var sr = new StreamReader(fileStream))
+					{
+						string line;
+						while ((line = sr.ReadLine()) != null)
+						{
+							scriptLines.Add(line);
+						}
+						sr.Close();
+						fileStream.Close();
+					}
+
+					scriptExeLine = 0;
+					scriptExeDelay = 0;
+					scriptStack = new List<int>();
+
+					scripting = true;
+					btnStartPauseScript.Image = Properties.Resources.PauseIcon;
+					toolStripStatusLabel1.Text = "Script is running!";
+				}
+				catch (Exception ex)
+				{
+					toolStripStatusLabel1.Text = $"Error: {ex.Message}";
+				}
+			}
+		}
+
+		private void PauseScripting()
+		{
+			if (scripting)
+			{
+				scripting = false;
+				//leave scriptStack as not null
+				btnStartPauseScript.Image = Properties.Resources.PlayIcon;
+			}
+		}
+
+		private void ExecScript()
+		{
+			if (scriptExeDelay > 0) scriptExeDelay--;
+
+			bool setpointsUpdated = false;
+			while (scriptExeDelay == 0)
+			{
+				if (scriptExeLine < scriptLines.Count)
+				{
+					//not yet at end of script
+
+					Console.WriteLine($"{scriptExeLine} '{scriptLines[scriptExeLine]}'");
+					string line = scriptLines[scriptExeLine].Replace('.', ',');
+					line = line.TrimStart(new char[] { ' ', '\t' });
+					line = line.ToLower(); ;
+					string[] lineArgs = line.Split(new char[] { ' ', '\t' });
+					if (lineArgs.Length > 0)
+					{
+						bool outputEnable = cbOutEnable.Checked;
+						double voltage = psu.SetpointV;
+						double current = psu.SetpointI;
+
+						switch (lineArgs[0])
+						{
+							//psu control:
+							case "v":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										voltage = value;
+									}
+								}
+								break;
+							case "i":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										current = value;
+									}
+								}
+								break;
+							case "vi":
+								if (lineArgs.Length > 2)
+								{
+									double value;
+									if (double.TryParse(lineArgs[1], out value))
+									{
+										voltage = value;
+									}
+									if (double.TryParse(lineArgs[2], out value))
+									{
+										current = value;
+									}
+								}
+								break;
+
+							case "v++":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										voltage += value;
+									}
+								}
+								else
+								{
+									voltage += 1;
+								}
+								break;
+							case "v--":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										voltage -= value;
+									}
+								}
+								else
+								{
+									voltage -= 1;
+								}
+								break;
+							case "i++":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										current += value;
+									}
+								}
+								else
+								{
+									current += 1;
+								}
+								break;
+							case "i--":
+								if (lineArgs.Length > 1)
+								{
+									if (double.TryParse(lineArgs[1], out double value))
+									{
+										current -= value;
+									}
+								}
+								else
+								{
+									current -= 1;
+								}
+								break;
+
+							case "out0":
+								outputEnable = false;
+								break;
+							case "out1":
+								outputEnable = true;
+								break;
+
+
+
+							//execution control:
+							case "wait":
+								if (lineArgs.Length > 1)
+								{
+									int value;
+									if (int.TryParse(lineArgs[1], out value))
+									{
+										scriptExeDelay = (value > 0) ? value : 0;
+									}
+								}
+								break;
+							case "loop":
+								if (lineArgs.Length > 1)
+								{
+									if (scriptStack.Count < 42)
+									{
+										if (int.TryParse(lineArgs[1], out int value))
+										{
+											scriptStack.Add(scriptExeLine);//scriptExeLine will be incremented after popping it from the stack
+											scriptStack.Add((value > 1) ? value : 1);
+										}
+									}
+									else
+									{
+										toolStripStatusLabel1.Text = "script stack overflow (loop nesting)";
+									}
+								}
+								break;
+							case "pool":
+								if (scriptStack.Count > 1)
+								{
+									int value = --scriptStack[scriptStack.Count - 1];
+									if (value == 0)
+									{
+										//loop is over
+										scriptStack.RemoveAt(scriptStack.Count - 1);
+										scriptStack.RemoveAt(scriptStack.Count - 1);
+									}
+									else
+									{
+										//one more time!
+										scriptExeLine = scriptStack[scriptStack.Count - 2];
+									}
+								}
+								break;
+
+							default:
+								break;
+						}
+						if (voltage < 0.0)
+						{
+							voltage = 0;
+						}
+						else if (voltage > 31.0)
+						{
+							voltage = 31;
+						}
+						if (current < 0.0)
+						{
+							current = 0;
+						}
+						else if (current > 5.1)
+						{
+							current = 31;
+						}
+						if ((voltage != psu.SetpointV) ||
+							(current != psu.SetpointI))
+						{
+							psu.SetpointV = voltage;
+							psu.SetpointI = current;
+							setpointsUpdated = true;
+						}
+						if (outputEnable != cbOutEnable.Checked)
+						{
+							cbOutEnable.Checked = outputEnable;//set checkbox instead of psu because checkbox has a valuechanged that also sets the psu
+							setpointsUpdated = true;
+						}
+					}
+					else
+					{
+						//empty line
+					}
+					scriptExeLine++;
+				}
+				else
+				{
+					//end of script reached
+					StopScripting();
+					break;
+				}
+			}
+			if (setpointsUpdated)
+			{
+				UpdateDispSetpoint(psu.SetpointV, psu.SetpointI);
+			}
+		}
+
+		private void StopScripting()
+		{
+			scripting = false;
+			scriptStack = null;
+			btnStartPauseScript.Image = Properties.Resources.PlayIcon;
+		}
+
+		private void btnStartPauseScript_Click(object sender, EventArgs e)
+		{
+			toolStripStatusLabel1.Text = "";
+			if (scripting)
+			{
+				PauseScripting();
+			}
+			else
+			{
+				StartResumeScripting();
+			}
+		}
+
+		private void btnStopScript_Click(object sender, EventArgs e)
+		{
+			toolStripStatusLabel1.Text = "";
+			if (scripting)
+			{
+				StopScripting();
+			}
+		}
+
+		private void btnBrowseScript_Click(object sender, EventArgs e)
+		{
+			toolStripStatusLabel1.Text = "";
+			ofdLogAndScript.Title = "Open script file";
+			ofdLogAndScript.FileName = "psuScript.txt";
+			ofdLogAndScript.CheckFileExists = true;
+
+			//ShowDialog() is blocking but thats ok
+			DialogResult res = ofdLogAndScript.ShowDialog();
+			if (res == DialogResult.OK)
+			{
+				scriptingFileName = ofdLogAndScript.FileName;
+				lblScriptName.Text = Path.GetFileName(scriptingFileName);
+				btnStartPauseScript.Enabled = true;
+				btnStopScript.Enabled = true;
+			}
 		}
 	}
 }
