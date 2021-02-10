@@ -42,7 +42,7 @@ v1.2.0.0:<br>
 -moved higher level code for psu from form1 to it's own class<br>
 
 <sup>* Open in browser and select file bottom left. This can display the csv with "as fast as update rate" correctly.<br>
-���Note that HighCharts is used for drawing the graph which has a different lisence than this tool.</sup>
+  Note that HighCharts is used for drawing the graph which has a different lisence than this tool.</sup>
 
 v1.1.2.0:<br>
 -added load/save feature<br>

@@ -113,6 +113,10 @@ namespace pscontrol
 					cmbbxComList.SelectedIndex = 0;
 				}
 			}
+			else
+			{
+				cmbbxComList.Text = "";
+			}
 		}
 
 		/// <summary>
@@ -244,6 +248,8 @@ namespace pscontrol
 				toolStripStatusLabel1.Text = "Error: Port not found";
 				return;
 			}
+			string preConnectedButtonText = btnComConnect.Text;
+			btnComConnect.Text = "Connecting...";
 			try
 			{
 				connected = psu.Connect(((SerialPortDevice)cmbbxComList.SelectedItem).Port);
@@ -253,12 +259,14 @@ namespace pscontrol
 				//port is already open OR
 				//tried to open a removed port
 				toolStripStatusLabel1.Text = "Error: " + ex.Message;
+				btnComConnect.Text = preConnectedButtonText;
 				return;
 			}
 
 			if (!connected)
 			{
 				toolStripStatusLabel1.Text = "Error: Couldn't find device";
+				btnComConnect.Text = preConnectedButtonText;
 				return;
 			}
 
@@ -741,6 +749,7 @@ namespace pscontrol
 				else
 				{
 					//end of script reached
+					toolStripStatusLabel1.Text = "Script finished";
 					StopScripting();
 					break;
 				}
