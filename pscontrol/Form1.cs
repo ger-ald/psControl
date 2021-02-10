@@ -249,7 +249,8 @@ namespace pscontrol
 				return;
 			}
 			string preConnectedButtonText = btnComConnect.Text;
-			btnComConnect.Text = "Connecting...";
+			btnComConnect.Text = "Connecting";
+			Application.DoEvents();//let the buttontext update
 			try
 			{
 				connected = psu.Connect(((SerialPortDevice)cmbbxComList.SelectedItem).Port);
