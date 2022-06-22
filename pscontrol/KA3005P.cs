@@ -198,12 +198,12 @@ namespace pscontrol
 						if (setpointVoltage != prevSetVoltage)
 						{
 							prevSetVoltage = setpointVoltage;
-							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", CultureInfo.InvariantCulture), SERIAL_RECV_TIMEOUT_TOSS));
 						}
 						if (setpointCurrent != prevSetCurrent)
 						{
 							prevSetCurrent = setpointCurrent;
-							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+							serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", CultureInfo.InvariantCulture), SERIAL_RECV_TIMEOUT_TOSS));
 						}
 					}
 					serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.STATUS, "STATUS?", SERIAL_RECV_TIMEOUT_KEEP));
@@ -253,13 +253,13 @@ namespace pscontrol
 							break;
 						//received actual v/i output from psu (happens frequent)
 						case SerialMsgType.VOUT:
-							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out currentVoltage))
+							if (double.TryParse(task.Recv, NumberStyles.Any, CultureInfo.InvariantCulture, out currentVoltage))
 							{
 								// nothing...
 							}
 							break;
 						case SerialMsgType.IOUT:
-							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out currentCurrent))
+							if (double.TryParse(task.Recv, NumberStyles.Any, CultureInfo.InvariantCulture, out currentCurrent))
 							{
 								//status, v and i received, so notify eventhandlers: (when we send requests the status and the V are asked first so here we should have received status and V already)
 								OnOutputUpdate?.Invoke(this, EventArgs.Empty);
@@ -268,14 +268,14 @@ namespace pscontrol
 
 						//received setpoint v/i output from psu (happens only at connect and resync)
 						case SerialMsgType.VGET:
-							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out tempvalue))
+							if (double.TryParse(task.Recv, NumberStyles.Any, CultureInfo.InvariantCulture, out tempvalue))
 							{
 								this.SetpointV = tempvalue;
 								prevSetVoltage = setpointVoltage;
 							}
 							break;
 						case SerialMsgType.IGET:
-							if (double.TryParse(task.Recv, NumberStyles.Any, new CultureInfo("en-US"), out tempvalue))
+							if (double.TryParse(task.Recv, NumberStyles.Any, CultureInfo.InvariantCulture, out tempvalue))
 							{
 								this.SetpointI = tempvalue;
 								prevSetCurrent = setpointCurrent;
@@ -416,8 +416,8 @@ namespace pscontrol
 			//work-around: recall the one where we want to save and write our V and A again, then save.
 			//(this selects the index we want to save to and makes it work but the output will be turned off because of the recall)
 			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.DONTCARE, "RCL" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
-			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", new CultureInfo("en-US")), SERIAL_RECV_TIMEOUT_TOSS));
+			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.VSET, "VSET1:" + ((double)setpointVoltage / 100).ToString("00.00", CultureInfo.InvariantCulture), SERIAL_RECV_TIMEOUT_TOSS));
+			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.ISET, "ISET1:" + ((double)setpointCurrent / 1000).ToString("0.000", CultureInfo.InvariantCulture), SERIAL_RECV_TIMEOUT_TOSS));
 			serport1.Send(new SerialPortHandler.SerialTask(SerialMsgType.DONTCARE, "SAV" + index.ToString(), SERIAL_RECV_TIMEOUT_TOSS));
 		}
 	}

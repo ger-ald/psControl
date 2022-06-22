@@ -165,18 +165,18 @@ namespace pscontrol
 
 		private void UpdateDispOutput(double voltage, double current)
 		{
-			lblOutVolt.Text = voltage.ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + "  V";//can go up to 999.99
-			lblOutAmp.Text = current.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " A";//can go up to 99.999
+			lblOutVolt.Text = voltage.ToString("#0.00", CultureInfo.InvariantCulture).PadLeft(6) + "  V";//can go up to 999.99
+			lblOutAmp.Text = current.ToString("#0.000", CultureInfo.InvariantCulture).PadLeft(7) + " A";//can go up to 99.999
 
 			double power = voltage * current;
 			double resistance = voltage / current;
-			lblOutWatt.Text = power.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " W";//can go up to 999.999
+			lblOutWatt.Text = power.ToString("#0.000", CultureInfo.InvariantCulture).PadLeft(7) + " W";//can go up to 999.999
 			if (double.IsInfinity(resistance))
 				lblOutOhm.Text = "∞".PadLeft(7) + " Ω";//on windows xp it prints 'Infinity' instead of the infinity sign if you run it through ToString()
 			else if (resistance < 1000.000 || double.IsNaN(resistance))
-				lblOutOhm.Text = resistance.ToString("#0.000", new CultureInfo("en-US")).PadLeft(7) + " Ω";//can go up to 999.999
+				lblOutOhm.Text = resistance.ToString("#0.000", CultureInfo.InvariantCulture).PadLeft(7) + " Ω";//can go up to 999.999
 			else
-				lblOutOhm.Text = (resistance / 1000.0).ToString("#0.00", new CultureInfo("en-US")).PadLeft(6) + " kΩ";//can go up to 999.999
+				lblOutOhm.Text = (resistance / 1000.0).ToString("#0.00", CultureInfo.InvariantCulture).PadLeft(6) + " kΩ";//can go up to 999.999
 		}
 
 		private void UpdateDispSetpoint(double voltage, double current)
@@ -200,7 +200,7 @@ namespace pscontrol
 				cnudAmpSetpoint3.ValueNoOnValueChanged = (decimal)spI % 10;
 			}
 
-			lblSetpointWatt.Text = (voltage * current).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
+			lblSetpointWatt.Text = (voltage * current).ToString("#0.000' W'", CultureInfo.InvariantCulture).PadLeft(9);
 		}
 
 		private void psu_OnSurpriseDisconnect(object sender, EventArgs e)
@@ -359,14 +359,14 @@ namespace pscontrol
 		{
 			double voltage = (double)cnudVoltSetpoint1.Value + (double)cnudVoltSetpoint2.Value / 10 + (double)cnudVoltSetpoint3.Value / 100;
 			psu.SetpointV = voltage;
-			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
+			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", CultureInfo.InvariantCulture).PadLeft(9);
 		}
 
 		private void cnudAmpSetpoint_ValueChangeds(object sender, EventArgs e)
 		{
 			double current = (double)cnudAmpSetpoint1.Value + (double)cnudAmpSetpoint2.Value / 10 + (double)cnudAmpSetpoint4.Value / 100 + (double)cnudAmpSetpoint3.Value / 1000;
 			psu.SetpointI = current;
-			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", new CultureInfo("en-US")).PadLeft(9);
+			lblSetpointWatt.Text = (psu.SetpointV * psu.SetpointI).ToString("#0.000' W'", CultureInfo.InvariantCulture).PadLeft(9);
 		}
 
 		private void CbOutEnable_CheckedChanged(object sender, EventArgs e)
@@ -404,7 +404,7 @@ namespace pscontrol
 
 		private void TmrSecondTimer_Tick(object sender, EventArgs e)
 		{
-			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrSecondTimer.Interval / 1000.0)).ToString("#0", new CultureInfo("en-US")).PadLeft(2) + " updates/sec";
+			lblOutRateDisplay.Text = ((double)updatesCounter / ((double)tmrSecondTimer.Interval / 1000.0)).ToString("#0", CultureInfo.InvariantCulture).PadLeft(2) + " updates/sec";
 			updatesCounter = 0;
 
 			if (scripting)
