@@ -265,6 +265,7 @@ namespace Win32PortEnumerate
 					for (uint i = 0; NativeMethods.SetupDiEnumDeviceInfo(hDevInfoSet, i, ref devInfoData); i++)
 					{
 						port = GetPortName(hDevInfoSet, devInfoData);
+						if (port == null) continue;
 						if (!port.StartsWith("COM")) continue;
 						busDescription = "";
 						deviceId = "";
